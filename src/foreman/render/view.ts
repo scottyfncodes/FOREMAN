@@ -143,7 +143,8 @@ export class View {
     const sun = new THREE.DirectionalLight('#fff3dc', 2.3);
     sun.position.set(-14, 26, 22);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
+    const big = Math.min(window.innerWidth, window.innerHeight) >= 700;
+    sun.shadow.mapSize.set(big ? 2048 : 1024, big ? 2048 : 1024);
     sun.shadow.bias = -0.0015;
     sun.shadow.normalBias = 0.04;
     this.sun = sun;
