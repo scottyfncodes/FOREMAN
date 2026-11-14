@@ -53,6 +53,21 @@ const NAMES: Record<string, [string, string]> = {
   crate: ['Crate', 'Crate'],
 };
 
+/** The caddie. Seen it all, impressed by none of it. */
+const CADDIE: Record<string, string[]> = {
+  none: ['Steel does not care how hard you swing.', 'Nice dent. In the ball.'],
+  short: ['The grass is still standing too.', 'You might try hitting it next time.'],
+  miss: ['Clean through the hole. Building says thanks.', 'Nothing but air, pro.'],
+  weaken: ['You got its attention.', 'It felt that. Ask it again.'],
+  small: ['Hole in the wall. Wall is still there.', 'Pretty. Changed nothing.'],
+  big: ['Now you are talking.', 'That is a piece of it.'],
+  three: ['That will play.', 'I would not have hit that. Glad you did.', 'Do not let it go to your head.'],
+  two: ['Par. Nobody ever bought a round for par.', 'Down is down. Could be prettier.'],
+  one: ['Ugly. It counts.', 'We do not have to tell anybody how many that took.'],
+  standing: ['Still up there. So is your pride, barely.', 'It is laughing at you. I am only smiling.'],
+  neighbour: ['That one belonged to somebody.', 'You owe a man a porch.'],
+};
+
 const hex = (n: number): string => `#${n.toString(16).padStart(6, '0')}`;
 const pad = (n: number): string => (n < 10 ? `0${n}` : `${n}`);
 
@@ -77,12 +92,15 @@ class Foreman {
   private drag: { id: number; x: number; y: number; dist: number } | null = null;
   private loads = false;
   private notes = 0;
+  private quips = 0;
+  private lastEffect = '';
+  private sayTimer = 0;
   private booms = 0;
   private raf = 0;
   private alive = true;
   private hud: {
     pips: HTMLElement; stars: HTMLElement; tray: HTMLElement; chip: HTMLElement; chain: HTMLElement; fx: HTMLElement; flash: HTMLElement;
-    gold: HTMLElement; loads: HTMLButtonElement; linetag: HTMLElement; top: HTMLElement; bottom: HTMLElement; pull: HTMLElement; coach: HTMLElement;
+    gold: HTMLElement; loads: HTMLButtonElement; linetag: HTMLElement; top: HTMLElement; bottom: HTMLElement; pull: HTMLElement; coach: HTMLElement; caddie: HTMLElement;
   } | null = null;
   private resultTimer = 0;
   private sheet: HTMLElement | null = null;
@@ -193,7 +211,7 @@ class Foreman {
     const jobs = this.button('All jobs', '', () => this.showJobs(), svg(ICON.list, '', false));
     const gear = this.button('', 'icon', () => this.showSettings(), svg(ICON.gear, '', false));
     gear.setAttribute('aria-label', 'Settings');
-    this.ui.append(el('div', 'fm-title', el('h1', 'fm-word', 'FOREMAN', el('b')), el('p', 'fm-tag', 'Golf balls. Load-bearing walls.'), el('div', 'fm-title-actions', play, el('div', 'fm-title-row', jobs, gear))));
+    this.ui.append(el('div', 'fm-title', el('h1', 'fm-word', 'FOREMAN', el('b')), el('p', 'fm-tag', 'West Texas. One bucket. Never lay up.'), el('div', 'fm-title-actions', play, el('div', 'fm-title-row', jobs, gear))));
     this.resize();
   }
 
@@ -298,10 +316,12 @@ class Foreman {
     const linetag = el('div', 'fm-linetag', 'GET IT BELOW THE RED LINE');
     const pull = el('div', 'fm-pull', el('i'), el('b'));
     pull.hidden = true;
-    const coach = el('div', 'fm-coach', 'Touch where to hit. Pull back for power. Let go.');
+    const coach = el('div', 'fm-coach', 'Touch where to hit. Pull back. Let it rip.');
     coach.hidden = this.store.data.seen.includes('coach');
-    this.ui.append(fx, linetag, flash, gold, top, chain, coach, chip, pull, bottom);
-    this.hud = { pips, stars, tray, chip, chain, fx, flash, gold, loads, linetag, top, bottom, pull, coach };
+    const caddie = el('div', 'fm-caddie');
+    caddie.hidden = true;
+    this.ui.append(fx, linetag, flash, gold, top, chain, coach, caddie, chip, pull, bottom);
+    this.hud = { pips, stars, tray, chip, chain, fx, flash, gold, loads, linetag, top, bottom, pull, coach, caddie };
     this.loads = false;
     this.view.loads = false;
     this.refreshKit();
@@ -545,6 +565,24 @@ class Foreman {
     window.setTimeout(() => s.remove(), 1600);
   }
 
+  private line(kind: string): string {
+    const set = CADDIE[kind] ?? CADDIE.small;
+    return set[this.quips++ % set.length];
+  }
+
+  /** The caddie has something to say. */
+  private say(kind: string): void {
+    if (!this.hud) return;
+    const c = this.hud.caddie;
+    c.textContent = this.line(kind);
+    c.hidden = false;
+    c.classList.remove('go');
+    void c.offsetWidth;
+    c.classList.add('go');
+    window.clearTimeout(this.sayTimer);
+    this.sayTimer = window.setTimeout(() => { c.hidden = true; }, 2600);
+  }
+
   private flashNow(): void {
     const f = this.hud?.flash;
     if (!f) return;
@@ -559,6 +597,7 @@ class Foreman {
     for (const e of frame) {
       switch (e.t) {
         case 'strike':
+          this.lastEffect = e.effect;
           // The hit itself: a beat of stillness, then the consequences.
           if (e.effect === 'break' || e.effect === 'blast' || e.effect === 'gas') { this.freeze = 0.06; this.buzz(30); }
           if (e.effect === 'weaken') { audio.play('thump', 1, 'brick'); audio.play('crack', 0.8); this.note(e.x, e.y + 0.5, 'CRACKED', 'amber'); this.buzz(14); }
@@ -653,6 +692,10 @@ class Foreman {
           if (hud) window.setTimeout(() => { if (this.hud === hud) hud.chain.hidden = true; }, 900);
           this.refreshKit();
           this.replan();
+          if (e.status === 'aim' && this.session.used > 0) {
+            const fx = this.lastEffect;
+            this.say(fx === 'none' || fx === 'short' || fx === 'miss' ? fx : this.session.felled >= 0.22 ? 'big' : fx === 'weaken' ? 'weaken' : 'small');
+          }
           if (e.status === 'won' || e.status === 'lost') { this.view.holdClose = true; this.resultTimer = window.setTimeout(() => this.showResult(), 650); }
           break;
         default:
@@ -679,15 +722,15 @@ class Foreman {
       fact('Shots', `${s.used} · par ${lv.par}`, s.stars === 3 ? '' : s.used > lv.par ? 'OVER PAR' : 'KEYSTONE FOR 3');
       fact('Longest chain', `${s.bestChain}`);
       fact('Score', s.score.toLocaleString('en-US'), out.newBest ? 'BEST' : '');
-      card.append(el('div', 'fm-verdict', 'DOWN'), stars);
+      card.append(el('div', 'fm-verdict', 'DOWN'), stars, el('p', 'fm-quote', this.line(s.stars === 3 ? 'three' : s.stars === 2 ? 'two' : 'one')));
       if (s.keystone) card.append(el('div', 'fm-keyline', svg(ICON.key), out.newKeystone ? 'Keystone found: one shot took half of it' : 'Keystone: one shot took half of it'));
       card.append(facts, el('div', 'fm-card-actions', this.button('Again', '', () => this.startLevel(this.index)), last ? this.button('All jobs', 'primary', () => this.showJobs()) : this.button('Next job', 'primary', () => this.startLevel(this.index + 1))));
     } else {
       audio.play('fail');
       const why = s.loss === 'neighbour'
-        ? 'The house next door took a hit. A building falls toward the support it lost, so take the support on the far side.'
+        ? 'The house next door took a hit. Cut a tower low and it drops straight. Cut it high and the top goes over.'
         : `Out of shots with ${Math.round((1 - s.sim.progress()) * 100)}% still above the line. LOADS shows which pieces carry the most: those are the ones worth a ball.`;
-      card.append(el('div', 'fm-verdict lost', s.loss === 'neighbour' ? 'WRONG WAY' : 'STILL STANDING'), el('p', '', why), el('div', 'fm-card-actions', this.button('Jobs', '', () => this.showJobs()), this.button('Try again', 'primary', () => this.startLevel(this.index))));
+      card.append(el('div', 'fm-verdict lost', s.loss === 'neighbour' ? 'WRONG WAY' : 'STILL STANDING'), el('p', 'fm-quote', this.line(s.loss === 'neighbour' ? 'neighbour' : 'standing')), el('p', '', why), el('div', 'fm-card-actions', this.button('Jobs', '', () => this.showJobs()), this.button('Try again', 'primary', () => this.startLevel(this.index))));
     }
     scrim.append(card);
     this.sheet = scrim;

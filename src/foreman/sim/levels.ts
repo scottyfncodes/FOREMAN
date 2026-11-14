@@ -1,9 +1,14 @@
-import type { LevelDef, Mat, MemberDef, PipeDef } from './types';
+import type { LevelDef, Mat, MemberDef, PipeDef, SignDef } from './types';
 
 /** Small drafting kit: every helper takes the bottom-left corner. */
 class Draft {
   readonly members: MemberDef[] = [];
   readonly pipes: PipeDef[] = [];
+  readonly signs: SignDef[] = [];
+  /** A painted sign on a piece: text, bottom-left corner, size, and the piece that carries it. */
+  sign(text: string, x: number, y: number, w: number, h: number, host: number, bg?: string, fg?: string): void {
+    this.signs.push({ text, x, y, w, h, host, bg, fg });
+  }
   box(mat: Mat, x: number, y: number, w: number, h: number, extra: Partial<MemberDef> = {}): number {
     this.members.push({ mat, x: r(x), y: r(y), w: r(w), h: r(h), ...extra });
     return this.members.length - 1;
@@ -37,10 +42,11 @@ function hut(): LevelDef {
   d.infill('timber', 2.3, 2.05, 1.0, 1.7);
   d.box('timber', 0, 3.75, 3.6, 0.2);
   d.roof('timber', -0.3, 3.95, 4.2, 1.0);
+  d.sign('KEEP OUT', 0.36, 2.55, 0.88, 0.34, 5, '#efe8da', '#b23a2a');
   return {
-    id: 'hut', name: 'Watchman\'s Hut', kind: 'Timber hut on stilts', members: d.members, lineY: 2.9, shots: 3, par: 1,
-    brief: 'Get everything below the red line.',
-    lesson: { title: 'Take the shot', body: 'Touch the spot you want to hit, pull back for power, let go. Knock out what holds the hut up and the rest comes down with it.' },
+    id: 'hut', name: 'Deer Blind', kind: 'Timber blind on stilts', members: d.members, signs: d.signs, lineY: 2.9, shots: 3, par: 1,
+    brief: 'Knock the legs out from under it.',
+    lesson: { title: 'Grip it and rip it', body: 'Touch the spot you want to hit, pull back for power, let go. Take out what holds it up and the rest follows.' },
   };
 }
 
@@ -65,10 +71,11 @@ function frameHouse(): LevelDef {
   d.infill('timber', 4.3, 2.65, 1.5, 2.2);
   d.box('timber', -0.2, 4.85, 6.45, 0.2);
   d.roof('timber', -0.5, 5.05, 7.05, 1.6);
+  d.sign('CONDEMNED', 1.52, 1.25, 1.1, 0.36, 4, '#f2b705', '#1b1a18');
   return {
-    id: 'frame', name: 'Frame House', kind: 'Two-storey timber house', members: d.members, lineY: 3.7, shots: 3, par: 1,
+    id: 'frame', name: 'Old Ranch House', kind: 'Two-storey timber house', members: d.members, signs: d.signs, lineY: 3.7, shots: 3, par: 1,
     brief: 'One post is doing more than its share.',
-    lesson: { title: 'Loads move', body: 'Take a support away and its neighbours carry the difference. If that is more than they can take, they crack, then go. Aim at a piece to see what it is holding.' },
+    lesson: { title: 'Loads move', body: 'Take a support away and its neighbours carry the difference. More than they can take and they crack, then go. Aim at a piece to see what it is holding.' },
   };
 }
 
@@ -89,10 +96,11 @@ function terrace(): LevelDef {
     d.box('timber', 0, y + 2.7, W, 0.2);
   }
   d.roof('timber', -0.2, 8.7, W + 0.4, 1.3);
+  d.sign('FEED & SEED', 1.9, 2.18, 3.4, 0.5, 7, '#efe8da', '#1f4d3a');
   return {
-    id: 'terrace', name: 'Mill Row', kind: 'Brick terrace, timber floors', members: d.members, lineY: 4.0, shots: 3, par: 1,
-    brief: 'A ball only cracks brick. Sometimes that is enough.',
-    lesson: { title: 'Weaken it', body: 'A standard ball cracks brick: up to half its strength gone. A pier already near its limit cannot take that. LOADS shows which one.' },
+    id: 'terrace', name: 'Feed Store', kind: 'Brick storefront, timber floors', members: d.members, signs: d.signs, lineY: 4.0, shots: 3, par: 1,
+    brief: 'A ball only cracks brick. Sometimes that is all it needs.',
+    lesson: { title: 'Weaken it', body: 'A standard ball cracks brick, and a crack takes up to half its strength. A pier already near its limit cannot spare that. LOADS shows which one.' },
   };
 }
 
@@ -117,10 +125,11 @@ function stack(): LevelDef {
     d.box('timber', nx - 0.1, 2.6, 4.2, 0.25, { protect: p });
     d.box('timber', nx - 0.3, 2.85, 4.6, 1.3, { protect: p, shape: 'gable' });
   }
+  d.sign('DRY CREEK', 0.6, 10.25, 1.8, 0.5, 18, '#47525c', '#efe8da');
   return {
-    id: 'stack', name: 'Tank Tower', kind: 'Brick tower beside a house', members: d.members, lineY: 4.2, shots: 3, par: 1,
-    brief: 'Drop the tower. Do not touch the house next door.',
-    lesson: { title: 'Mind the neighbour', body: 'Cut a tower at the ground and it comes straight down. Break it higher up and the top topples over. The house with the blue outline is not yours to hit.' },
+    id: 'stack', name: 'Water Tower', kind: "Brick tower by the preacher's house", members: d.members, signs: d.signs, lineY: 4.2, shots: 3, par: 1,
+    brief: "Drop the tower. Leave the preacher's house be.",
+    lesson: { title: 'Mind the neighbour', body: 'Cut a tower at the ground and it comes straight down. Break it higher up and the top goes over sideways. The house with the blue outline is not yours to hit.' },
   };
 }
 
@@ -143,10 +152,11 @@ function shop(): LevelDef {
   d.pipe(-1.6, 0.15, 0.3, 0.15);
   d.pipe(0.3, 0.15, 0.3, 1.2);
   d.pipe(0.3, 1.2, 1.4, 1.2, wall);
+  d.sign('GAS', 3.9, 2.72, 2.0, 0.72, 3, '#b23a2a', '#efe8da');
   return {
-    id: 'shop', name: 'Corner Shop', kind: 'Brick shop, concrete floors', members: d.members, pipes: d.pipes, lineY: 3.8, shots: 2, par: 1,
+    id: 'shop', name: 'Filling Station', kind: 'Brick station, concrete floors', members: d.members, signs: d.signs, pipes: d.pipes, lineY: 3.8, shots: 2, par: 1,
     brief: 'No bottles in sight. Follow the yellow pipe.',
-    lesson: { title: 'Follow the pipe', body: 'A yellow pipe always ends at a gas bottle, even when the bottle is sealed behind a wall. Put a ball through that wall and it goes off.' },
+    lesson: { title: 'Follow the pipe', body: 'A yellow pipe always ends at a gas bottle, even one sealed up behind a wall. Put a ball through that wall and it goes off.' },
   };
 }
 
@@ -164,8 +174,9 @@ function apartments(): LevelDef {
     }
     d.box('concrete', -0.2, y + 2.75, 10.45, 0.25);
   }
+  d.sign('MOTEL', 2.9, 12.0, 4.4, 1.15, 41, '#1f4d6b', '#f2b705');
   return {
-    id: 'flats', name: 'Harbour Flats', kind: 'Concrete apartment block', members: d.members, lineY: 5.0, shots: 4, par: 2,
+    id: 'flats', name: 'Starlite Motel', kind: 'Concrete motel block', members: d.members, signs: d.signs, lineY: 5.0, shots: 4, par: 2,
     brief: 'Concrete laughs at a standard ball. Find a better one.',
     lesson: { title: 'Hidden balls', body: 'A painted ring marks a piece with a special ball sealed inside. Break it open and the ball is yours for this job. The Heavy ball goes through concrete.' },
   };
@@ -185,10 +196,11 @@ function warehouse(): LevelDef {
   for (const x of [0.8, 2.6, 4.9, 9.2, 11.1]) d.box('gas', x, 0, 0.4, 0.7);
   d.box('crate', 6.1, 0, 0.7, 0.7);
   for (let b = 0; b < 3; b++) { d.infill('steel', xs[b] + 0.4, 1.2, 3.7, 1.2); d.pane(xs[b] + 0.4, 2.4, 3.7, 1.0); }
+  d.sign('WELDING', 4.3, 5.25, 4.4, 0.62, 8, '#efe8da', '#1b1a18');
   return {
-    id: 'shed', name: 'Dockside Shed', kind: 'Steel warehouse on brick piers', members: d.members, lineY: 4.9, shots: 2, par: 1,
+    id: 'shed', name: 'Welding Shop', kind: 'Steel shed on brick piers', members: d.members, signs: d.signs, lineY: 4.9, shots: 2, par: 1,
     brief: 'A ball bounces off steel. Something else in here will not.',
-    lesson: { title: 'Chain it', body: 'Steel shrugs off golf balls. But a gas bottle goes off when it is hit, sets off every bottle near it, and the piers under this frame are only brick.' },
+    lesson: { title: 'Chain it', body: 'Steel does not care about golf balls. But a gas bottle goes off when it is hit, sets off every bottle near it, and the piers under this frame are only brick.' },
   };
 }
 
@@ -210,14 +222,37 @@ function exchange(): LevelDef {
     d.box('concrete', -0.2, y + 2.7, 10.9, 0.2);
   }
   d.box('steel', 3.4, 18.5, 3.8, 0.8);
+  d.sign('BANK', 3.6, 3.56, 3.2, 0.5, 4, '#efe8da', '#1b1a18');
   return {
-    id: 'exchange', name: 'Exchange House', kind: 'Six-storey office block', members: d.members, lineY: 7.0, shots: 4, par: 2,
+    id: 'exchange', name: "Cattlemen's Bank", kind: 'Six-storey bank on a brick arcade', members: d.members, signs: d.signs, lineY: 7.0, shots: 4, par: 2,
     brief: 'Five floors of concrete on four brick legs.',
-    lesson: { title: 'Soft storey', body: 'All that weight comes down through the columns of the lowest floors. There is a Charge ball in this building. Put it where the load is greatest.' },
+    lesson: { title: 'Soft storey', body: 'All that weight comes down through the columns of the lowest floors. There is a Charge ball somewhere in this building. Put it where the load is greatest.' },
   };
 }
 
-export const LEVELS: LevelDef[] = [hut(), frameHouse(), terrace(), stack(), warehouse(), shop(), apartments(), exchange()];
+function elevator(): LevelDef {
+  const d = new Draft();
+  // Four concrete silos on a row of piers, with a timber headhouse along the top.
+  for (let i = 0; i < 5; i++) d.box('concrete', i * 3.1 - 0.05 - (i === 2 ? 0.04 : 0), 0, i === 2 ? 1.08 : 1.0, 4.55);
+  for (let i = 0; i < 4; i++) d.box('gas', i * 3.1 + 1.8, 0, 0.4, 0.7);
+  const deck = d.box('concrete', -0.4, 4.55, 14.1, 0.45);
+  for (let i = 0; i < 4; i++) d.box('concrete', 0.2 + i * 3.25, 5.0, 3.05, 9.0);
+  d.box('timber', -0.1, 14.0, 13.5, 0.25);
+  for (const x of [3.0, 5.2, 7.9, 10.1]) d.box('timber', x, 14.25, 0.3, 1.9);
+  d.infill('timber', 3.3, 14.25, 1.9, 1.9);
+  d.infill('timber', 5.5, 14.25, 2.4, 1.9);
+  d.infill('timber', 8.2, 14.25, 1.9, 1.9);
+  d.box('timber', 2.7, 16.15, 8.0, 0.3);
+  d.roof('timber', 2.4, 16.45, 8.6, 1.4);
+  d.sign('CO-OP GRAIN', 3.6, 9.6, 6.2, 1.2, deck + 2, '#efe8da', '#1b1a18');
+  return {
+    id: 'elevator', name: 'Grain Elevator', kind: 'Concrete silos, eighteen metres up', members: d.members, signs: d.signs, lineY: 9.8, shots: 2, par: 1,
+    brief: 'Biggest thing for forty miles. Somebody left the propane under it.',
+    lesson: { title: 'Big finish', body: 'Eighteen metres of concrete on five piers that are already near their limit. You know what gas does. Pick your bottle.' },
+  };
+}
+
+export const LEVELS: LevelDef[] = [hut(), frameHouse(), terrace(), stack(), warehouse(), shop(), apartments(), exchange(), elevator()];
 
 export function levelById(id: string): LevelDef | undefined {
   return LEVELS.find((l) => l.id === id);

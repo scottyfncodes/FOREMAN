@@ -17,7 +17,7 @@ const names = [];
 const snap = async (n) => { await page.screenshot({ path: `${out}/${n}.png` }); names.push(n); };
 if (idx === 'title') await snap('title');
 else {
-  await page.evaluate((i) => { const g = window.__foreman; g.store.data.seen = ['coach', ...['hut','frame','terrace','stack','shed','shop','flats','exchange']]; g.startLevel(i); }, Number(idx));
+  await page.evaluate((i) => { const g = window.__foreman; g.store.data.seen = ['coach', ...['hut','frame','terrace','stack','shed','shop','flats','exchange','elevator']]; g.startLevel(i); }, Number(idx));
   await page.waitForTimeout(700);
   await snap(`l${idx}-rest`);
   let n = 0;

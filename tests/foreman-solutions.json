@@ -6,5 +6,6 @@
   "shed": [[13]],
   "shop": [[8]],
   "flats": [["H"], [3, 0.5, 0.4, "heavy"]],
-  "exchange": [["H"], [7, 0.5, 0.5, "blast"]]
+  "exchange": [["H"], [7, 0.5, 0.5, "blast"]],
+  "elevator": [[6]]
 }
