@@ -1,12 +1,12 @@
-/* Plays the Crew Contracts game (the original DEMO DAY) in headless Chromium at iPhone size and saves screenshots to
+/* Plays the Crew Contracts game (the original Foreman game) in headless Chromium at iPhone size and saves screenshots to
  * smoke-output/. The training job is played by touch (inspect, crane, swing,
  * dozer, finish), a purchase is made in the garage, and the save is checked
  * after a reload. Fails on page errors, a double-spent move or a lost save.
- * Requires a server: `pnpm preview` (default http://localhost:4173/DEMO-DAY/). */
+ * Requires a server: `pnpm preview` (default http://localhost:4173/FOREMAN/). */
 import { existsSync, mkdirSync } from 'node:fs';
 import { chromium, devices } from '@playwright/test';
 
-const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/DEMO-DAY/';
+const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/FOREMAN/';
 const OUT = 'smoke-output';
 mkdirSync(OUT, { recursive: true });
 

@@ -1,7 +1,7 @@
-/* DEMO DAY service worker: makes the game load offline once visited.
+/* Foreman service worker: makes the game load offline once visited.
  * Navigations are network-first (so deploys show up), hashed assets are
  * cache-first (they never change), everything else is stale-while-revalidate. */
-const VERSION = 'demo-day-v8';
+const VERSION = 'foreman-v9';
 const SHELL = ['./', './index.html', './manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {

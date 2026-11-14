@@ -1,6 +1,6 @@
 {
-  "name": "DEMO DAY",
-  "short_name": "DEMO DAY",
+  "name": "Foreman",
+  "short_name": "Foreman",
   "description": "A demolition puzzle. Pull back, let go, and find the weak spot that brings the house down.",
   "id": "demo-day",
   "start_url": "./",

@@ -1,9 +1,9 @@
 {
-  "name": "demo-day",
+  "name": "foreman",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "DEMO DAY: golf-powered house demolition for the phone browser.",
+  "description": "Foreman: a demolition puzzle for the phone browser.",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "vite",

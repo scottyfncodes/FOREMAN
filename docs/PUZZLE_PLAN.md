@@ -1,4 +1,4 @@
-# DEMO DAY: casual demolition puzzle plan
+# Foreman: casual demolition puzzle plan
 
 Audit of the golf game as it stood (commit 07ba311) and the changes that turn it into a
 persistent, drag-to-shoot demolition puzzle. The simulation stays the foundation.

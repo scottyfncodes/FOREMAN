@@ -57,7 +57,7 @@ export function titleScreen(app: App): ScreenInstance {
     h(
       'header',
       { class: 'title-head' },
-      h('h1', { class: 'wordmark' }, h('span', { text: 'DEMO' }), h('span', { class: 'day', text: 'DAY' })),
+      h('h1', { class: 'wordmark', text: 'FOREMAN' }),
       h('span', { class: 'title-stamp', text: 'Crew Contracts' }),
       h('p', { class: 'tagline', text: 'The heroes saved the city. Somebody has to clean it up.' }),
     ),

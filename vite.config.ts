@@ -1,9 +1,9 @@
 import { defineConfig } from 'vitest/config';
 
-// GitHub Pages serves the site from https://<user>.github.io/DEMO-DAY/
+// GitHub Pages serves the site from https://<user>.github.io/FOREMAN/
 // so every asset URL has to be prefixed with the repository name.
 export default defineConfig({
-  base: '/DEMO-DAY/',
+  base: '/FOREMAN/',
   build: {
     target: 'es2019',
     sourcemap: false,

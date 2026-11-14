@@ -1,8 +1,8 @@
-# DEMO DAY
+# Foreman
 
 A casual demolition puzzle for the phone browser. A street of little brick houses, a tee, and a bag of golf balls. Every brick, pane, floor, beam and roof tile is its own piece: find the weak spot, take it out, and watch the rest come down. Damage stays put, so you can take a few shots, close the app, and pick up the same half-wrecked house later.
 
-**Play it:** https://scottyfncodes.github.io/DEMO-DAY/
+**Play it:** https://scottyfncodes.github.io/FOREMAN/
 
 Add it to your iPhone Home Screen (Share → Add to Home Screen) for full-screen play. Progress is saved on the device.
 
@@ -29,7 +29,7 @@ Add it to your iPhone Home Screen (Share → Add to Home Screen) for full-screen
 - **Daily Demo**: one house per date, the same on every device. Eight shots, scored on damage and skill, with your recent days kept on this device.
 - **Sandbox**: every special ball, unlimited.
 - **Challenges**: the original ten trick-shot levels, the precision shots and Score Attack, with shot limits, stars and medals.
-- **Crew Contracts**: the original machine-and-moves Demo Day, kept whole under Settings with its own save.
+- **Crew Contracts**: the original machine-and-moves game, kept whole under Settings with its own save.
 
 ## How it is built
 
