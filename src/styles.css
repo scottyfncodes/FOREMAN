@@ -1,4 +1,4 @@
-/* DEMO DAY: one design system for every screen.
+/* Foreman: one design system for every screen.
    Charcoal panels frame a bright site; safety yellow means "act"; rust means "careful". */
 
 :root {
@@ -401,16 +401,16 @@ p {
 }
 
 .wordmark {
-  font-size: clamp(58px, 18vw, 104px);
-  line-height: 0.9;
-  letter-spacing: -0.01em;
+  display: inline-block;
+  margin: 0;
+  padding-bottom: 8px;
+  font-size: clamp(40px, 11.5vw, 84px);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: 0.04em;
   color: #fff8e9;
-  text-shadow: 0 3px 0 #2a1c08, 0 10px 30px rgba(0, 0, 0, 0.35);
-}
-
-.wordmark .day {
-  color: var(--safety);
-  margin-left: 0.18em;
+  border-bottom: 5px solid var(--safety);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
 }
 
 .tagline {
@@ -1846,7 +1846,7 @@ p {
   }
 
   .wordmark {
-    font-size: 64px;
+    font-size: 56px;
   }
 
   .title-panel {

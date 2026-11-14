@@ -60,7 +60,7 @@ export function golfTitleScreen(app: App): ScreenInstance {
     'main',
     { class: 'screen dd dd-title' },
     canvas,
-    h('header', { class: 'dd-title-head' }, h('h1', { class: 'dd-wordmark', 'aria-label': 'Demo Day' }, h('span', { text: 'DEMO' }), h('span', { class: 'day', text: 'DAY' })), h('button', { class: 'dd-icon', 'aria-label': 'Settings', html: ICON.settings, onClick: () => (app.play('tap'), app.go('golf-settings')) })),
+    h('header', { class: 'dd-title-head' }, h('h1', { class: 'dd-wordmark', text: 'FOREMAN' }), h('button', { class: 'dd-icon', 'aria-label': 'Settings', html: ICON.settings, onClick: () => (app.play('tap'), app.go('golf-settings')) })),
     h(
       'section',
       { class: 'dd-title-panel' },
@@ -224,7 +224,7 @@ export function golfSettingsScreen(app: App): ScreenInstance {
       'section',
       { class: 'dd-panel' },
       h('h3', { text: 'More' }),
-      h('button', { class: 'dd-row', onClick: () => (app.play('tap'), app.go('classic')) }, h('span', { class: 'dd-row-no', html: GICON.crane }), h('span', { class: 'dd-row-main' }, h('b', { text: 'Crew Contracts' }), h('small', { text: 'The original machine-and-moves Demo Day. Its save is separate and untouched.' }))),
+      h('button', { class: 'dd-row', onClick: () => (app.play('tap'), app.go('classic')) }, h('span', { class: 'dd-row-no', html: GICON.crane }), h('span', { class: 'dd-row-main' }, h('b', { text: 'Crew Contracts' }), h('small', { text: 'The original machine-and-moves game. Its save is separate and untouched.' }))),
     ),
     h(
       'section',
@@ -264,7 +264,7 @@ export function golfSettingsScreen(app: App): ScreenInstance {
         }),
       ),
     ),
-    h('p', { class: 'dd-foot', text: 'Progress is saved on this device. Add DEMO DAY to your Home Screen for full screen play.' }),
+    h('p', { class: 'dd-foot', text: 'Progress is saved on this device. Add Foreman to your Home Screen for full screen play.' }),
   );
   return { el };
 }

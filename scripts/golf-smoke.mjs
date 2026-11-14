@@ -1,13 +1,13 @@
-/* Plays DEMO DAY in headless Chromium at iPhone size and saves screenshots to
+/* Plays Foreman in headless Chromium at iPhone size and saves screenshots to
  * smoke-output/golf-*. Pulls back and lets go by touch, checks that a short
  * pull cancels, that shots break things and fill the reward meter, that a
  * house keeps its damage across a reload, and that the other modes open.
  * Fails on page errors.
- * Requires a server: `pnpm preview` (default http://localhost:4173/DEMO-DAY/). */
+ * Requires a server: `pnpm preview` (default http://localhost:4173/FOREMAN/). */
 import { existsSync, mkdirSync } from 'node:fs';
 import { chromium, devices } from '@playwright/test';
 
-const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/DEMO-DAY/';
+const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/FOREMAN/';
 const OUT = 'smoke-output';
 const DEVICE = process.env.DEVICE ?? 'iPhone 13';
 mkdirSync(OUT, { recursive: true });

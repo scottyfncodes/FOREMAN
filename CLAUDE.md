@@ -1,7 +1,7 @@
-# Working on DEMO DAY
+# Working on Foreman
 
 Run `pnpm check` (typecheck, unit tests, build) before pushing. `main` deploys to GitHub Pages:
-https://scottyfncodes.github.io/DEMO-DAY/
+https://scottyfncodes.github.io/FOREMAN/
 
 ## Design guardrails
 

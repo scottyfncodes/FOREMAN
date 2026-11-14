@@ -1,46 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#4f97d6"/>
-      <stop offset="0.76" stop-color="#9ccbee"/>
-      <stop offset="0.76" stop-color="#6aa846"/>
-      <stop offset="1" stop-color="#4f8a34"/>
-    </linearGradient>
-    <pattern id="brick" width="56" height="28" patternUnits="userSpaceOnUse" x="96" y="222">
-      <rect width="56" height="28" fill="#b9472f"/>
-      <path d="M0 26.5 H56 M0 12.5 H56 M27 0 V12.5 M0 14 V26.5 M56 14 V26.5" stroke="#8a2f1f" stroke-width="3" fill="none"/>
-    </pattern>
-    <radialGradient id="ball" cx="0.38" cy="0.34" r="0.7">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="0.7" stop-color="#f1ede2"/>
-      <stop offset="1" stop-color="#c9c3b4"/>
-    </radialGradient>
-  </defs>
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect id="tile" width="512" height="512" rx="112" fill="#131416"/>
   <g id="art">
-    <ellipse cx="256" cy="414" rx="196" ry="14" fill="#3f7229"/>
-    <rect x="356" y="92" width="44" height="100" fill="url(#brick)"/>
-    <rect x="350" y="84" width="56" height="14" fill="#8a2f1f"/>
-    <rect x="96" y="216" width="320" height="196" fill="url(#brick)"/>
-    <polygon points="118,118 394,118 446,222 66,222" fill="#4e7b44"/>
-    <polygon points="66,222 446,222 440,234 72,234" fill="#365a2f"/>
-    <g fill="#f3ead6">
-      <rect x="124" y="262" width="64" height="58"/>
-      <rect x="216" y="318" width="56" height="94"/>
-    </g>
-    <rect x="132" y="270" width="48" height="42" fill="#5f8fa8"/>
-    <rect x="223" y="325" width="42" height="87" fill="#b8901c"/>
-    <polygon points="362,250 362,264 384,264 384,278 398,278 398,292 408,292 408,348 398,348 398,362 380,362 380,376 356,376 356,390 328,390 328,376 304,376 304,362 286,362 286,348 276,348 276,292 284,292 284,278 298,278 298,264 318,264 318,250" fill="#2a1612"/>
-    <g fill="#b9472f" stroke="#8a2f1f" stroke-width="3">
-      <rect x="394" y="196" width="40" height="20" transform="rotate(-28 414 206)"/>
-      <rect x="430" y="262" width="34" height="18" transform="rotate(18 447 271)"/>
-      <rect x="418" y="344" width="28" height="16" transform="rotate(-12 432 352)"/>
-    </g>
-    <circle cx="326" cy="326" r="54" fill="url(#ball)"/>
-    <g fill="#d8d2c3">
-      <circle cx="303" cy="312" r="5"/><circle cx="324" cy="305" r="5"/><circle cx="345" cy="312" r="5"/>
-      <circle cx="295" cy="333" r="5"/><circle cx="316" cy="328" r="5"/><circle cx="336" cy="329" r="5"/><circle cx="357" cy="335" r="5"/>
-      <circle cx="307" cy="350" r="5"/><circle cx="328" cy="352" r="5"/><circle cx="349" cy="354" r="5"/>
-    </g>
+    <path d="M142 112H378V184H214V224H318V292H214V400H142Z" fill="#efe8da"/>
+    <rect x="214" y="224" width="104" height="68" fill="#f2b705"/>
   </g>
 </svg>

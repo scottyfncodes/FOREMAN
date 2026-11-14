@@ -50,7 +50,7 @@ export function settingsScreen(app: App): ScreenInstance {
         } }))));
       } })),
     ),
-    h('p', { class: 'muted small center', text: 'Progress is saved on this device. Add DEMO DAY to your Home Screen for full screen play.' }),
+    h('p', { class: 'muted small center', text: 'Progress is saved on this device. Add Foreman to your Home Screen for full screen play.' }),
   );
   return { el };
 }
