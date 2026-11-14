@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "FOREMAN: golf-powered structural demolition puzzles for the phone browser.",
+  "description": "FOREMAN: golf shots knocking down houses, as a shot-budget puzzle game for the phone browser.",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "vite",
@@ -16,7 +16,8 @@
     "smoke": "node scripts/foreman/smoke.mjs && node scripts/golf-smoke.mjs && node scripts/smoke.mjs",
     "tune": "vitest run --config scripts/vitest.tune.config.ts --disableConsoleIntercept scripts/tune",
     "check": "pnpm typecheck && pnpm test && pnpm build",
-    "probe": "vitest run --config scripts/foreman/vitest.config.ts --disableConsoleIntercept scripts/foreman/probe"
+    "probe": "vitest run --config scripts/foreman/vitest.config.ts --disableConsoleIntercept scripts/foreman/probe",
+    "par": "vitest run --config scripts/golf/vitest.config.ts --disableConsoleIntercept"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",

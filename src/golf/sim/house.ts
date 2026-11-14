@@ -63,6 +63,8 @@ export interface HouseSpec {
    * pieces also send a shock into whatever they land on, so collapses spread.
    */
   cascade?: number;
+  /** How big a hole a ball knocks: 1 is one brick, 2 takes the bricks around it too. Campaign houses use more. */
+  punch?: number;
   /** Gas bottles: go off when hit or hit, and set each other off. y is the floor they stand on (default the ground). */
   tanks?: Array<{ x: number; z: number; y?: number }>;
 }
@@ -100,6 +102,8 @@ export interface HouseInfo {
   palette: Palette;
   /** How hard falling pieces hit (see HouseSpec.cascade). */
   cascade: number;
+  /** Ball punch (see HouseSpec.punch). */
+  punch: number;
   trees: Array<{ x: number; z: number; s: number }>;
 }
 
@@ -887,6 +891,7 @@ export function buildLevel(spec: HouseSpec, yard: YardSpec): { parts: Part[]; in
     palette,
     trees: yard.trees,
     cascade: spec.cascade ?? 1,
+    punch: spec.punch ?? 1,
   };
   return { parts: b.parts, info };
 }

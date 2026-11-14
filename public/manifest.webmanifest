@@ -1,7 +1,7 @@
 {
   "name": "Foreman",
   "short_name": "Foreman",
-  "description": "Golf-powered demolition puzzles. Touch a spot, pull back, let go, and find the one shot that brings the building down.",
+  "description": "Golf shots knocking down houses. Bring each one down inside the shot budget.",
   "id": "demo-day",
   "start_url": "./",
   "scope": "./",

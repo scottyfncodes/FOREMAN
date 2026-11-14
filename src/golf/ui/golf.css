@@ -1314,3 +1314,9 @@ html:has(.dd-title) body {
 .reduced-motion .dd-chain.tick b {
   animation: none;
 }
+
+/* House results: stars and the caddie. */
+.dd-stars { font-size: 44px; line-height: 1; letter-spacing: 6px; margin: 6px 0 8px; color: #d8cfbd; }
+.dd-stars .on { color: #f2b705; -webkit-text-stroke: 1.5px #131416; }
+.dd-quote { font-style: italic; font-weight: 700; font-size: 19px; line-height: 1.25; margin: 0 0 10px; padding-left: 10px; border-left: 4px solid #f2b705; }
+.dd-down.last { color: #c8371f; }

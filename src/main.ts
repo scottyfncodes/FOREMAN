@@ -16,10 +16,11 @@ const root = document.getElementById('app');
 if (!root) throw new Error('Missing #app root');
 
 const app = new App(root);
-// FOREMAN: golf shots against load-bearing structures. The front door.
-app.register('title', foremanScreen);
-// The earlier golf game (brick houses, Daily Demo, Sandbox, Challenges), kept whole under Settings.
+// The game: golf shots knocking down houses.
+app.register('title', golfTitleScreen);
 app.register('classic-golf', golfTitleScreen);
+// The frame-building experiment, kept reachable from Settings.
+app.register('frames', foremanScreen);
 app.register('houses', golfHousesScreen);
 app.register('challenges', golfChallengesScreen);
 app.register('levels', golfChallengesScreen);
@@ -33,8 +34,8 @@ app.register('play', playScreen);
 app.register('garage', garageScreen);
 app.register('settings', settingsScreen);
 app.register('records', recordsScreen);
-// ?classic opens the earlier golf game directly (its smoke test uses this).
-app.go(new URLSearchParams(window.location.search).has('classic') ? 'classic-golf' : 'title');
+// ?frames opens the frame-building experiment directly (its smoke test uses this).
+app.go(new URLSearchParams(window.location.search).has('frames') ? 'frames' : 'title');
 
 // From the iOS Home Screen the viewport can come up short of the real screen, leaving a
 // dark band under fixed layers. There the app fills the whole screen, so size to it.

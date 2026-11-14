@@ -6,6 +6,7 @@ import { DEG } from '../sim/math';
 import { PartState, type Part } from '../sim/parts';
 import type { Prediction } from '../sim/aim';
 import { golferSpots, type SimEvent, type World } from '../sim/world';
+import { buildRange, type Range } from '../../foreman/render/range';
 import { buildEnv, type Env } from './env';
 import { Fx } from './fx';
 import { buildBird, buildCat, buildGolfer, buildModel, buildSquirrel } from './models';
@@ -116,6 +117,7 @@ export class GolfRenderer {
   private reveals: Array<{ mesh: THREE.Mesh; t: number; x: number; y: number; z: number; r: number }> = [];
   private weakGlow = 0;
   private sun: THREE.DirectionalLight;
+  private range: Range | null = null;
   private time = 0;
   private camPos = new THREE.Vector3();
   private camLook = new THREE.Vector3();
@@ -139,13 +141,13 @@ export class GolfRenderer {
     this.renderer.toneMappingExposure = 1.05;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.camera = new THREE.PerspectiveCamera(50, 1, 0.1, 500);
-    this.scene.fog = new THREE.Fog(0xcfe4ef, 60, 160);
+    this.camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1400);
+    this.scene.fog = new THREE.Fog(0xecd0aa, 150, 620);
 
-    const hemi = new THREE.HemisphereLight(0xdcefff, 0x7a9a5a, 1.25);
+    const hemi = new THREE.HemisphereLight(0xdcecff, 0xc79a62, 1.25);
     this.scene.add(hemi);
-    this.sun = new THREE.DirectionalLight(0xfff0d8, 2.6);
-    this.sun.position.set(13, 24, 18);
+    this.sun = new THREE.DirectionalLight(0xffd9a3, 2.9);
+    this.sun.position.set(-22, 17, 20);
     this.sun.target.position.set(0, 0, -2);
     this.sun.castShadow = true;
     const sc = this.sun.shadow.camera;
@@ -209,9 +211,18 @@ export class GolfRenderer {
       this.teeBalls.push(m);
       this.scene.add(m);
     }
-    const shirts = [0xd9452b, 0x2f7a6f, 0x3f74b8];
+    const shirts = [0x4f8f8a, 0xd9452b, 0x3f74b8];
     for (let i = 0; i < 3; i++) {
       const g = buildGolfer(shirts[i] as number);
+      if (i === 0) {
+        // The pro: straw hat, faded shirt, seen better days.
+        const straw = new THREE.MeshStandardMaterial({ color: 0xd9c08a, roughness: 0.9 });
+        const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.32, 0.03, 18), straw);
+        brim.position.set(0.33 - 0.82, 1.76, 0);
+        const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.15, 0.16, 14), straw);
+        crown.position.set(0.31 - 0.82, 1.84, 0);
+        for (const o of [brim, crown]) { o.rotation.z = -0.28; o.castShadow = true; g.body.add(o); }
+      }
       this.scene.add(g.body);
       this.golfers.push({ ...g, t: 0, firing: false, delay: 0 });
     }
@@ -248,7 +259,11 @@ export class GolfRenderer {
       }
     });
     this.houseGroup = new THREE.Group();
-    this.env = buildEnv(world.info, this.lowPower);
+    this.env = buildEnv(world.info, this.lowPower, true);
+    // The setting: a worn-out driving range in West Texas, late in the day.
+    if (this.range) this.scene.remove(this.range.group);
+    this.range = buildRange(world.info.W, world.info.tee.z);
+    this.scene.add(this.range.group);
     this.scene.add(this.env.group, this.houseGroup);
     this.fx.clear();
     this.flashes.clear();
@@ -551,6 +566,7 @@ export class GolfRenderer {
     const w = this.world;
     const P = w.parts;
     this.env.update(dt, this.time);
+    this.range?.update(dt, this.time);
 
     // Falling and settling pieces follow their debris bodies.
     for (const d of w.debris) {

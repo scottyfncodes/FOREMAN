@@ -41,7 +41,11 @@ function lawnTexture(): THREE.CanvasTexture {
   return t;
 }
 
-export function buildEnv(info: HouseInfo, lowPower: boolean): Env {
+/**
+ * `range` drops the suburb (sky, lawn, tee box, the street behind) so the house can stand
+ * out on the West Texas driving range instead; the path, flower beds and trees stay.
+ */
+export function buildEnv(info: HouseInfo, lowPower: boolean, range = false): Env {
   const group = new THREE.Group();
 
   // Sky dome: a vertical gradient, warm at the horizon.
@@ -162,6 +166,7 @@ export function buildEnv(info: HouseInfo, lowPower: boolean): Env {
     canopies.push({ mesh: canopy, x: t.x, z: t.z, shake: 0, base: canopy.position.clone() });
   }
 
+  const streetFrom = group.children.length;
   // The street behind: neighbours' houses over the back hedge, kept muted so the target house leads.
   const neighbourCols = [0xc9b7a0, 0xb8c4c9, 0xd4c2a8, 0xbfae9c, 0xc7cdb8];
   const roofCols = [0x6e7a86, 0x8a5a4a, 0x5d6b5b, 0x7a6a5e];
@@ -207,6 +212,10 @@ export function buildEnv(info: HouseInfo, lowPower: boolean): Env {
     group.add(rail);
   }
 
+  if (range) {
+    for (const o of group.children.slice(streetFrom)) group.remove(o);
+    group.remove(sky, lawn, teeBox);
+  }
   // Clouds: puffy clusters drifting across.
   const clouds: THREE.Object3D[] = [];
   const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, emissive: 0xffffff, emissiveIntensity: 0.35 });

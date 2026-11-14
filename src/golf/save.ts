@@ -36,6 +36,8 @@ export interface HouseRecord {
   found: number[];
   /** Biggest chain reaction set off by one shot. */
   bestChain: number;
+  /** Best star rating earned on this house (0 = not cleared under the shot budget). */
+  stars: number;
 }
 
 export interface CampaignSave {
@@ -71,7 +73,7 @@ export function defaultGolfSave(): GolfSave {
 }
 
 export function emptyHouseRecord(): HouseRecord {
-  return { shots: 0, done: false, doneIn: 0, bestIn: 0, bestPct: 0, found: [], bestChain: 0 };
+  return { shots: 0, done: false, doneIn: 0, bestIn: 0, bestPct: 0, found: [], bestChain: 0, stars: 0 };
 }
 
 export function emptyLevelRecord(): LevelRecord {
@@ -110,7 +112,7 @@ export function normalizeGolfSave(raw: unknown): GolfSave | null {
       if (!r || typeof r !== 'object') continue;
       const q = r as Record<string, unknown>;
       const found = Array.isArray(q.found) ? q.found.filter((x): x is number => Number.isInteger(x) && (x as number) >= 0).slice(0, 64) : [];
-      out.campaign.houses[h.id] = { shots: Math.floor(num(q.shots)), done: q.done === true, doneIn: Math.floor(num(q.doneIn)), bestIn: Math.floor(num(q.bestIn, num(q.doneIn))), bestPct: Math.min(100, Math.floor(num(q.bestPct))), found, bestChain: Math.floor(num(q.bestChain)) };
+      out.campaign.houses[h.id] = { shots: Math.floor(num(q.shots)), done: q.done === true, doneIn: Math.floor(num(q.doneIn)), bestIn: Math.floor(num(q.bestIn, num(q.doneIn))), bestPct: Math.min(100, Math.floor(num(q.bestPct))), found, bestChain: Math.floor(num(q.bestChain)), stars: Math.max(0, Math.min(3, Math.floor(num(q.stars)))) };
     }
     if (typeof camp.current === 'string' && HOUSES.some((h, i) => h.id === camp.current && i <= out.campaign.reached)) out.campaign.current = camp.current;
     else out.campaign.current = (HOUSES[out.campaign.reached] as HouseDef).id;
@@ -189,11 +191,12 @@ export class GolfStore {
   }
 
   /** The destruction goal is reached: records the shots and opens the next house. Returns the next house, if any. */
-  completeHouse(h: HouseDef): HouseDef | undefined {
+  completeHouse(h: HouseDef, used = 0, stars = 0): HouseDef | undefined {
     const rec = this.houseRec(h.id);
     rec.done = true;
-    if (!rec.doneIn) rec.doneIn = rec.shots;
+    rec.doneIn = used || rec.doneIn || rec.shots;
     if (!rec.bestIn || rec.doneIn < rec.bestIn) rec.bestIn = rec.doneIn;
+    rec.stars = Math.max(rec.stars ?? 0, stars);
     const i = this.houseIndex(h.id);
     this.data.campaign.reached = Math.max(this.data.campaign.reached, Math.min(HOUSES.length - 1, i + 1));
     this.save();
