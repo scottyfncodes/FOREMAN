@@ -1,6 +1,33 @@
 # FOREMAN: design notes
 
-What this generation of the game is, why it is built this way, and what was measured.
+## Where the game is now
+
+The game is the golf shot knocking down brick houses (`src/golf`). An experiment that
+replaced the houses with bare structures and a load solver (`src/foreman`, "Frame Jobs")
+was tried, shipped briefly as the front door, and judged the wrong direction: knocking down
+half-built frames is not as good as knocking down homes. It stays reachable from Settings,
+and its setting (the West Texas range) and caddie carried over. The notes below the line
+describe that experiment.
+
+What changed in the house game:
+
+- **Puzzle loop.** Every house has a destruction goal, a hard shot budget and a par. Each
+  attempt starts on a fresh house. One star in budget, two at par, three under par.
+- **Par is measured.** `pnpm par` runs a greedy bot: each shot it tries a spread of targets
+  (gas bottles, the solver's weak points, a grid over the front wall) and keeps the one that
+  brings the most down, with standard balls at full pull. Its line is recorded in
+  `tests/golf-par.json` and replayed in the tests, so every goal is reachable at par.
+- **Ball punch.** In campaign houses a ball damages the pieces around the one it hits,
+  fading with distance (`HouseSpec.punch`, 3.4 in the campaign). Before this a full-power
+  ball moved the destruction meter by about 0.1%; now a well-placed one takes 10 to 19%.
+  Challenges, Daily and Sandbox keep punch 1, so their recorded solutions still hold.
+- **Setting.** The suburb is replaced by the driving range: warm low sun, hardpan, mesas,
+  telephone poles, pump jack, windmill, pickup, range balls, tumbleweeds, an armadillo, and
+  a pro in a straw hat.
+
+Not verified: frame rate on a real phone, and whether it is fun.
+
+---
 
 ## The idea
 

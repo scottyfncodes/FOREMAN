@@ -1,6 +1,6 @@
 # Foreman
 
-Golf-powered demolition puzzles for the phone browser, set on a worn-out driving range in West Texas with a caddie who has seen it all. Every building stands because its weight has somewhere to go. Find the piece that changes that, put a golf ball on it, and the physics does the rest.
+Golf shots knocking down houses, as a shot-budget puzzle game for the phone browser. A worn-out driving range in West Texas, a pro in a straw hat, a caddie who has seen it all, and a street's worth of brick houses standing where the 150 marker should be.
 
 **Play it:** https://scottyfncodes.github.io/FOREMAN/
 
@@ -8,24 +8,27 @@ Add it to your iPhone Home Screen (Share → Add to Home Screen) for full-screen
 
 ## How it plays
 
-- **Touch the spot, pull back, let go.** The pull sets power. The guide shows the flight, and the read-out says what the piece is holding and what this shot will do to it.
-- **Get everything below the red line** inside the shot budget. One star for doing it, two for par, three for beating par or for a par finish with a KEYSTONE: one shot that drops half the building.
-- **A ball goes through or it cracks.** Timber and glass give way to a standard ball. Brick only cracks, losing up to half its strength, which is enough for a pier already near its limit. Concrete needs the Heavy ball. Balls bounce off steel.
-- **Loads move.** Take a support away and its neighbours carry the difference. Overloaded pieces crack, hold for a moment, then go, and hand their load on. That is the chain.
-- **Read before you swing.** Stressed pieces already show cracks. LOADS colours every piece by how close it is to its limit.
-- **Hidden things have tells.** A yellow pipe ends at a gas bottle, even one sealed behind a wall. A painted ring marks a piece with a special ball inside (Power, Heavy, Charge).
+- **Touch the spot, pull back, let go.** The pull sets power; the flight bends to reach your spot. The guide shows the flight to the first thing it touches.
+- **Every house is a puzzle.** Bring a share of it down inside a shot budget. Out of shots short of the goal is a fail and an instant retry on a fresh house.
+- **Stars.** One for reaching the goal in budget, two for doing it at par, three for beating par. Par is what a careful bot manages with standard balls alone, so three stars takes something smarter: a gas chain, a special ball, a better read of the structure.
+- **A ball knocks a hole, not a chip.** In the campaign a standard ball takes out a patch of wall. Take the wrong patch and nothing follows. Take the bricks under a lintel, a corner, or a porch column and the load above has nowhere to go.
+- **Chain reactions.** Falling pieces hit hard and heavy ones send a shock into what they land on. Red gas bottles go off a beat after they are hit and set off any bottle in reach.
+- **Weak points** pulse yellow while you aim: the standing parts whose loss would bring the most down.
+- **Special balls are hidden in the bricks.** Break the right brick and a Power, Superball, Multiball, Heavy or Charge ball pops into your bag.
 
-Nine jobs out on the range: a deer blind, an old ranch house, the feed store, the water tower, a welding shop, the filling station, the Starlite Motel, the Cattlemen's Bank and an eighteen-metre grain elevator. See `docs/FOREMAN_DESIGN.md`.
+## Modes
 
-**Classic** (Settings): the earlier brick-house golf game with its campaign, Daily Demo, Sandbox and Challenges, and Crew Contracts behind that. All kept whole with their own saves.
+- **Play**: ten houses, each bigger than the last, from a one-storey cottage to a three-storey house 14 m wide. Each has a destruction goal, a shot budget and a par.
+- **Daily Demo**, **Sandbox**, **Challenges**: as before.
+- **Frame Jobs** (Settings): an experiment with the same golf shot against bare structures and a load solver. Not the main game.
+- **Crew Contracts** (Settings): the original machine-and-moves game, with its own save.
 
 ## How it is built
 
-- **Simulation** (`src/foreman/sim/`): a load solver (`structure.ts`) owns everything standing; planck.js rigid bodies exist only for what has come loose (`world.ts`). Fixed step, deterministic. Jobs are data (`levels.ts`).
-- **Game** (`src/foreman/game/`): ball flight (`shot.ts`); shot budget, ball bag, chain, score and verdict (`session.ts`).
-- **Rendering** (`src/foreman/render/`): three.js, instanced pieces with procedural materials and cracks, pooled chips and dust. The setting (`range.ts`) is all scenery: hardpan, mesas, a pump jack, a windmill, a pickup, range balls, tumbleweeds and an armadillo.
-- **UI** (`src/foreman/ui/`): plain DOM over the canvas, touch first, safe-area aware.
-- **Classic games**: `src/golf` (golf), `src/wreck`, `src/game`, `src/ui`, `src/render` (crew contracts).
+- **Game layer** (`src/golf/game/`): pull-back controls, shot quality, the reward economy and the campaign houses with their goals, budgets and par.
+- **Simulation** (`src/golf/sim/`): deterministic and fixed-step (120 Hz). `house.ts` lays out the house brick by brick with openings, lintels, floors, partitions, stairs, roof decks and tiles, chimney, porch, furniture and garden, and links what rests on what. `world.ts` flies the balls, resolves damage (including the campaign's ball punch), solves support and load, and drops loose parts as tumbling debris.
+- **Rendering** (`src/golf/render/`): three.js, instanced parts, pooled effects. The setting comes from `src/foreman/render/range.ts`.
+- **Save**: `demo-day:golf` (version 2). House records gained a `stars` field; old saves load as before.
 - Procedural Web Audio sound. PWA manifest and service worker.
 
 ## Development
@@ -33,12 +36,12 @@ Nine jobs out on the range: a deer blind, an old ranch house, the feed store, th
 ```sh
 pnpm install
 pnpm dev          # local dev server
-pnpm test         # vitest: FOREMAN solver, shots, jobs and rules; plus the classic suites
+pnpm test         # vitest: physics, structure, controls, rewards, saves, every house at par, every challenge at par
 pnpm typecheck    # tsc --noEmit
 pnpm build        # production build to dist/
 pnpm check        # all three
-pnpm probe        # fires a ball at every piece of every job and prints what happens
-pnpm preview && pnpm smoke   # headless iPhone plays every job; then the classic smokes
+pnpm par          # a greedy bot plays every house and records its line (sets par)
+pnpm preview && pnpm smoke   # headless iPhone runs
 ```
 
 Deployed to GitHub Pages by `.github/workflows/deploy.yml` on every push to `main`.

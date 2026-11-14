@@ -1,3 +1,4 @@
+import { writeFileSync } from 'node:fs';
 import { test } from 'vitest';
 import { HOUSES, houseLevel } from '../../src/golf/game/houses';
 import { shotAt } from '../../src/golf/game/solve';
@@ -6,7 +7,7 @@ import { Session } from '../../src/golf/sim/session';
 
 // Greedy bot: each shot, tries a spread of targets on a copy of the house and keeps the one that
 // brings the most down. Prints the destruction after each shot. Used to set goals, par and budgets.
-// HOUSE=h3 limits it to one house; SHOTS sets how many shots to look ahead (default 6).
+// HOUSE=h3 limits it to one house; SHOTS sets how many shots to play (default: the house's par).
 type Target = { x: number; y: number; z: number };
 
 function play(id: string, targets: Target[]): Session {
@@ -36,8 +37,9 @@ function candidates(s: Session): Target[] {
 
 test('par', () => {
   const only = process.env.HOUSE;
-  const depth = Number(process.env.SHOTS ?? 6);
+  const record: Record<string, number[][]> = {};
   for (const h of HOUSES) {
+    const depth = Number(process.env.SHOTS ?? h.par);
     if (only && h.id !== only) continue;
     const chosen: Target[] = [];
     const line: string[] = [];
@@ -55,6 +57,9 @@ test('par', () => {
       line.push(`${(bestPct * 100).toFixed(0)}%@(${best.x.toFixed(1)},${best.y.toFixed(1)},${best.z.toFixed(1)})`);
       if (bestPct > 0.97) break;
     }
+    record[h.id] = chosen.map((c) => [c.x, c.y, c.z]);
     console.log(`${h.id} ${h.name} parts ${play(h.id, []).world.parts.length} goal ${h.goal}: ${line.join(' ')}  [${((Date.now() - t0) / 1000).toFixed(0)}s]`);
   }
+  // WRITE=1 records the lines the par test replays.
+  if (process.env.WRITE) writeFileSync('tests/golf-par.json', `${JSON.stringify(record, null, 1)}\n`);
 });
