@@ -118,7 +118,7 @@ async function main() {
     console.log(`    found ${f.found}, inventory ${JSON.stringify(f.inv)}`);
   }
 
-  // Damage persists: reload and come back to the same house.
+  // Every attempt is a fresh house: reload and come back, and it is whole again with a full budget.
   await page.evaluate(() => window.__golf.persist());
   const before = await page.evaluate(() => window.__golf.session.world.parts.filter((p) => p.state !== 0 && p.house).length);
   await page.reload({ waitUntil: 'networkidle' });
@@ -127,8 +127,10 @@ async function main() {
   await page.locator('.dd-play').click();
   await page.waitForTimeout(1500);
   const after = await page.evaluate(() => window.__golf.session.world.parts.filter((p) => p.state !== 0 && p.house).length);
-  check(after === before, `house damage did not survive a reload (${before} -> ${after})`);
-  await snap(page, 'house-restored');
+  check(before > 0 && after === 0, `a new attempt should start on a fresh house (${before} -> ${after})`);
+  const budget = await page.evaluate(() => { const s = window.__golf.session; return [s.shotsLeft, s.level.shots]; });
+  check(budget[0] === budget[1], `a new attempt should have the full shot budget (${budget})`);
+  await snap(page, 'house-fresh');
 
   // Pause menu.
   await page.getByRole('button', { name: 'Pause' }).click();
