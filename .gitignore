@@ -10,3 +10,4 @@ tests/*.local.test.ts
 dist-preview
 scripts/.*.tmp.mjs
 scripts/foreman/out
+scripts/foreman/shots

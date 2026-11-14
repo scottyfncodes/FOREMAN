@@ -788,23 +788,27 @@ export class Sim {
         for (const o of [...(m.body.getUserData() as BodyData).members]) if (o !== m.id && this.members[o].mat === 'glass') this.breakMember(this.members[o], 'impact');
       }
       if (m.state === GONE) continue;
-      if (v > MATS[m.mat].shatter * (m.layer === 1 ? 0.5 : 1)) this.breakMember(m, 'impact');
+      if (v > MATS[m.mat].shatter * (m.layer === 1 ? 0.2 : m.shape !== 'box' ? 0.5 : 1)) this.breakMember(m, 'impact');
       else if (m.state === LOOSE && v > DETACH) this.detach(m, Math.min(4, Math.floor(v / DETACH)));
     }
     // Joints are no good at carrying a chunk that is propped or wedged: it comes apart.
     for (let b = this.world.getBodyList(); b; b = b.getNext()) {
       if (!b.isDynamic()) continue;
       const d = b.getUserData() as BodyData;
-      if (d.touched && d.members.length > 1) {
+      if (d.touched) {
         d.lean += DT;
-        if (d.lean > LEAN_TIME) {
-          for (const id of d.members) {
-            const q = this.members[id];
-            for (const o of q.bonds) this.members[o].bonds.delete(id);
-            q.bonds.clear();
+        if (d.lean > LEAN_TIME && !d.dirty) {
+          // Cladding and glass do not survive the frame coming down around them.
+          for (const id of [...d.members]) if (!structural(this.members[id])) this.breakMember(this.members[id], 'impact');
+          if (d.members.length > 1) {
+            for (const id of d.members) {
+              const q = this.members[id];
+              for (const o of q.bonds) this.members[o].bonds.delete(id);
+              q.bonds.clear();
+            }
+            d.dirty = true;
+            this.dirtyBodies.add(b);
           }
-          d.dirty = true;
-          this.dirtyBodies.add(b);
         }
       }
       d.touched = false;
