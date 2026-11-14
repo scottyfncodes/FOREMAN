@@ -241,3 +241,9 @@ body.fm {
 .fm-coach { position: absolute; left: 50%; top: 42%; transform: translateX(-50%); background: var(--fm-ink); color: var(--fm-cream); font: 600 19px/1.2 var(--fm-ui); letter-spacing: 0.03em; padding: 10px 14px; border-radius: 6px; text-align: center; width: max-content; max-width: 84vw; pointer-events: none; }
 .fm-title::before { height: 30%; }
 .fm-title::after { height: 30%; }
+
+/* ---------- the caddie ---------- */
+.fm-caddie { position: absolute; left: 50%; bottom: calc(var(--fm-bottom) + 112px); transform: translateX(-50%); max-width: min(86vw, 400px); width: max-content; background: var(--fm-paper); border: 2px solid var(--fm-ink); border-radius: 6px; box-shadow: 0 3px 0 var(--fm-ink); padding: 9px 13px 10px; font: 600 italic 19px/1.2 var(--fm-ui); text-align: center; pointer-events: none; }
+.fm-caddie::before { content: 'CADDIE'; display: block; font: 700 11px/1 var(--fm-ui); font-style: normal; letter-spacing: 0.14em; color: var(--fm-mute); margin-bottom: 4px; }
+.fm-caddie.go { animation: fm-rise 220ms ease-out; }
+.fm-card p.fm-quote { font: 600 italic 20px/1.25 var(--fm-ui); margin: 0 0 12px; color: var(--fm-ink); border-left: 4px solid var(--fm-amber); padding-left: 10px; }

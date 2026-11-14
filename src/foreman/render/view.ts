@@ -1,11 +1,10 @@
 import * as THREE from 'three';
-import { buildEnv, type Env } from '../../golf/render/env';
 import { buildGolfer } from '../../golf/render/models';
-import type { HouseInfo } from '../../golf/sim/house';
 import type { Effect, GameEvent, Session } from '../game/session';
 import { FACE_Z, flightAt, TEE_Z, type Flight } from '../game/shot';
 import { GONE, STANDING, type Member, type Pose } from '../sim/world';
 import { BALLS, type BallKind, type Mat } from '../sim/types';
+import { board, buildRange, type Range } from './range';
 import { MAT_INDEX, PALETTE, pieceMaterial, type PieceUniforms } from './shader';
 
 const MAX_FRAGS = 1500;
@@ -79,7 +78,7 @@ function puffTexture(): THREE.Texture {
 export class View {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
-  readonly camera = new THREE.PerspectiveCamera(26, 1, 0.5, 400);
+  readonly camera = new THREE.PerspectiveCamera(26, 1, 0.5, 1400);
   private uniforms: PieceUniforms = { uTime: { value: 0 }, uLoads: { value: 0 } };
   private batches: Batch[] = [];
   private session!: Session;
@@ -103,7 +102,7 @@ export class View {
   private trail: THREE.InstancedMesh;
   private trailPts: number[] = [];
   private reticle: THREE.Mesh;
-  private env: Env | null = null;
+  private env: Range | null = null;
   private marks: { mesh: THREE.Mesh; host: number }[] = [];
   private dead: { x: number; y: number; z: number; vx: number; vy: number; vz: number; life: number; r: number } | null = null;
   /** 0 = behind the golfer, 1 = up close on the building. */
@@ -134,13 +133,16 @@ export class View {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.NeutralToneMapping;
-    this.pad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshLambertMaterial({ color: '#b9b2a2' }));
+    this.pad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshLambertMaterial({ color: '#b5a892' }));
     this.pad.rotation.x = -Math.PI / 2;
     this.pad.receiveShadow = true;
     this.scene.add(this.pad);
 
-    this.scene.add(new THREE.HemisphereLight('#eaf4ff', '#8fae6a', 1.5));
-    const sun = new THREE.DirectionalLight('#fff3dc', 2.3);
+    // Late sun, low and warm, coming across the range from the left.
+    this.scene.background = new THREE.Color('#f1d3a6');
+    this.scene.fog = new THREE.Fog('#ecd0aa', 150, 620);
+    this.scene.add(new THREE.HemisphereLight('#dcecff', '#c79a62', 1.25));
+    const sun = new THREE.DirectionalLight('#ffd9a3', 2.9);
     sun.position.set(-14, 26, 22);
     sun.castShadow = true;
     const big = Math.min(window.innerWidth, window.innerHeight) >= 700;
@@ -166,7 +168,7 @@ export class View {
     this.dust = new THREE.Points(
       dg,
       new THREE.ShaderMaterial({
-        uniforms: { uMap: { value: puffTexture() }, uScale: { value: 1 }, uTint: { value: new THREE.Color('#e4dccb') } },
+        uniforms: { uMap: { value: puffTexture() }, uScale: { value: 1 }, uTint: { value: new THREE.Color('#e2c9a2') } },
         vertexShader: `attribute vec2 aDust; varying float vA; uniform float uScale;
           void main(){ vA = aDust.y; vec4 mv = modelViewMatrix * vec4(position,1.0); gl_PointSize = aDust.x * uScale / -mv.z; gl_Position = projectionMatrix * mv; }`,
         fragmentShader: `uniform sampler2D uMap; uniform vec3 uTint; varying float vA;
@@ -179,8 +181,20 @@ export class View {
     this.dust.renderOrder = 5;
     this.scene.add(this.dust);
 
-    const g = buildGolfer(0xd6402b);
+    // The pro: faded shirt, straw hat, seen better days.
+    const g = buildGolfer(0x4f8f8a);
     this.golfer = g;
+    const straw = new THREE.MeshStandardMaterial({ color: 0xd9c08a, roughness: 0.9 });
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.32, 0.03, 18), straw);
+    brim.position.set(0.33 - 0.82, 1.76, 0);
+    brim.rotation.z = -0.28;
+    const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.15, 0.16, 14), straw);
+    crown.position.set(0.31 - 0.82, 1.84, 0);
+    crown.rotation.z = -0.28;
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.153, 0.153, 0.04, 14), new THREE.MeshStandardMaterial({ color: 0x5a2f26 }));
+    band.position.set(0.325 - 0.82, 1.79, 0);
+    band.rotation.z = -0.28;
+    for (const o of [brim, crown, band]) { o.castShadow = true; g.body.add(o); }
     (g.body.children[0] as THREE.Object3D).position.x = -0.82;
     g.swing.position.x = 0.24 - 0.82;
     this.scene.add(g.body);
@@ -280,15 +294,17 @@ export class View {
     this.pad.scale.set(wide + 5, 6, 1);
     this.pad.position.set(cx, 0.03, 0.2);
     if (this.env) { this.scene.remove(this.env.group); }
-    const info = {
-      W: wide + 3, D: 6, doorX: 0, tee: { x: 0, y: 0, z: TEE_Z },
-      paving: [{ minX: -0.8, maxX: 0.8, minZ: 3.4, maxZ: TEE_Z - 2.5 }],
-      trees: [{ x: -wide / 2 - 6.5, z: -3, s: 1.1 }, { x: wide / 2 + 7.5, z: -5, s: 1.3 }, { x: -wide / 2 - 9, z: 7, s: 0.9 }],
-    } as unknown as HouseInfo;
-    this.env = buildEnv(info, false);
+    this.env = buildRange(wide, TEE_Z);
     this.env.group.position.x = cx;
     this.scene.add(this.env.group);
     this.golfer.body.position.set(cx, 0, TEE_Z);
+    for (const sg of session.level.signs ?? []) {
+      const hostDef = session.level.members[sg.host];
+      const mesh = board(sg.text, sg.w, sg.h, sg.bg ?? '#efe8da', sg.fg ?? '#1b1a18');
+      mesh.position.set(sg.x + sg.w / 2, sg.y + sg.h / 2, (hostDef.layer === 1 ? 0.33 : hostDef.shape && hostDef.shape !== 'box' ? 1.03 : hostDef.w > hostDef.h * 1.5 ? 0.95 : FRONT - 0.05) + 0.03);
+      this.root.add(mesh);
+      this.marks.push({ mesh, host: sg.host });
+    }
     // A painted ring marks a piece with a ball sealed in it.
     session.level.members.forEach((d, i) => {
       if (!d.hidden || d.hidden === 'gas') return;
@@ -359,7 +375,7 @@ export class View {
     cam.left = -s; cam.right = s; cam.top = s; cam.bottom = -s; cam.near = 1; cam.far = 120;
     cam.updateProjectionMatrix();
     this.sun.target.position.set((minX + maxX) / 2, maxY / 2, 0);
-    this.sun.position.set((minX + maxX) / 2 - 16, maxY / 2 + 26, 24);
+    this.sun.position.set((minX + maxX) / 2 - 30, maxY / 2 + 17, 26);
   }
 
   /** World point on the building's face under a screen position. */

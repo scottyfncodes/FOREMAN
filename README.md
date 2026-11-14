@@ -1,6 +1,6 @@
 # Foreman
 
-Golf-powered demolition puzzles for the phone browser. Every building stands because its weight has somewhere to go. Find the piece that changes that, put a golf ball on it, and the physics does the rest.
+Golf-powered demolition puzzles for the phone browser, set on a worn-out driving range in West Texas with a caddie who has seen it all. Every building stands because its weight has somewhere to go. Find the piece that changes that, put a golf ball on it, and the physics does the rest.
 
 **Play it:** https://scottyfncodes.github.io/FOREMAN/
 
@@ -15,7 +15,7 @@ Add it to your iPhone Home Screen (Share → Add to Home Screen) for full-screen
 - **Read before you swing.** Stressed pieces already show cracks. LOADS colours every piece by how close it is to its limit.
 - **Hidden things have tells.** A yellow pipe ends at a gas bottle, even one sealed behind a wall. A painted ring marks a piece with a special ball inside (Power, Heavy, Charge).
 
-Eight jobs, from a timber hut on stilts to a six-storey office block. See `docs/FOREMAN_DESIGN.md`.
+Nine jobs out on the range: a deer blind, an old ranch house, the feed store, the water tower, a welding shop, the filling station, the Starlite Motel, the Cattlemen's Bank and an eighteen-metre grain elevator. See `docs/FOREMAN_DESIGN.md`.
 
 **Classic** (Settings): the earlier brick-house golf game with its campaign, Daily Demo, Sandbox and Challenges, and Crew Contracts behind that. All kept whole with their own saves.
 
@@ -23,7 +23,7 @@ Eight jobs, from a timber hut on stilts to a six-storey office block. See `docs/
 
 - **Simulation** (`src/foreman/sim/`): a load solver (`structure.ts`) owns everything standing; planck.js rigid bodies exist only for what has come loose (`world.ts`). Fixed step, deterministic. Jobs are data (`levels.ts`).
 - **Game** (`src/foreman/game/`): ball flight (`shot.ts`); shot budget, ball bag, chain, score and verdict (`session.ts`).
-- **Rendering** (`src/foreman/render/`): three.js, instanced pieces with procedural materials and cracks, pooled chips and dust, on the golf game's lawn with its golfer.
+- **Rendering** (`src/foreman/render/`): three.js, instanced pieces with procedural materials and cracks, pooled chips and dust. The setting (`range.ts`) is all scenery: hardpan, mesas, a pump jack, a windmill, a pickup, range balls, tumbleweeds and an armadillo.
 - **UI** (`src/foreman/ui/`): plain DOM over the canvas, touch first, safe-area aware.
 - **Classic games**: `src/golf` (golf), `src/wreck`, `src/game`, `src/ui`, `src/render` (crew contracts).
 - Procedural Web Audio sound. PWA manifest and service worker.

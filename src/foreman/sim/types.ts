@@ -92,6 +92,18 @@ export interface PipeDef {
   host?: number;
 }
 
+/** A painted sign fixed to a piece. Scenery: it goes when its piece does. */
+export interface SignDef {
+  text: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  host: number;
+  bg?: string;
+  fg?: string;
+}
+
 export interface LevelDef {
   id: string;
   name: string;
@@ -99,6 +111,7 @@ export interface LevelDef {
   kind: string;
   members: MemberDef[];
   pipes?: PipeDef[];
+  signs?: SignDef[];
   /** Everything has to end up below this height. */
   lineY: number;
   /** Shots allowed. Out of shots with the job not done is a fail. */
