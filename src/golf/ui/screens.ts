@@ -12,7 +12,7 @@ import { MODE_UNLOCK, modeOpen, todayKey, type GolfStore } from '../save';
 import { GICON, ballSwatch } from './icons';
 
 /** Header with a back button for golf pages. */
-function pageHead(app: App, title: string, back: () => void = () => app.go('title')): HTMLElement {
+function pageHead(app: App, title: string, back: () => void = () => app.go('classic-golf')): HTMLElement {
   return h('header', { class: 'dd-page-head' }, h('button', { class: 'dd-icon', 'aria-label': 'Back', html: ICON.back, onClick: () => (app.play('tap'), back()) }), h('h2', { text: title }), h('span'));
 }
 
@@ -224,6 +224,7 @@ export function golfSettingsScreen(app: App): ScreenInstance {
       'section',
       { class: 'dd-panel' },
       h('h3', { text: 'More' }),
+      h('button', { class: 'dd-row', onClick: () => (app.play('tap'), app.go('title')) }, h('span', { class: 'dd-row-no', html: GICON.crane }), h('span', { class: 'dd-row-main' }, h('b', { text: 'Back to Foreman' }), h('small', { text: 'The new jobs: golf shots against load-bearing structures.' }))),
       h('button', { class: 'dd-row', onClick: () => (app.play('tap'), app.go('classic')) }, h('span', { class: 'dd-row-no', html: GICON.crane }), h('span', { class: 'dd-row-main' }, h('b', { text: 'Crew Contracts' }), h('small', { text: 'The original machine-and-moves game. Its save is separate and untouched.' }))),
     ),
     h(
@@ -254,7 +255,7 @@ export function golfSettingsScreen(app: App): ScreenInstance {
                       s.close();
                       app.golf.reset();
                       app.toast('Progress reset.');
-                      app.go('title');
+                      app.go('classic-golf');
                     },
                   }),
                 ),

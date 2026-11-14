@@ -1,6 +1,7 @@
 import './styles.css';
 import './golf/ui/golf.css';
 import { App } from './app';
+import { foremanScreen } from './foreman/ui/screen';
 import { golfPlayScreen } from './golf/ui/play';
 import { golfChallengesScreen, golfHousesScreen, golfSettingsScreen, golfTitleScreen } from './golf/ui/screens';
 import { briefScreen } from './ui/screens/brief';
@@ -15,8 +16,10 @@ const root = document.getElementById('app');
 if (!root) throw new Error('Missing #app root');
 
 const app = new App(root);
-// The golf game.
-app.register('title', golfTitleScreen);
+// FOREMAN: golf shots against load-bearing structures. The front door.
+app.register('title', foremanScreen);
+// The earlier golf game (brick houses, Daily Demo, Sandbox, Challenges), kept whole under Settings.
+app.register('classic-golf', golfTitleScreen);
 app.register('houses', golfHousesScreen);
 app.register('challenges', golfChallengesScreen);
 app.register('levels', golfChallengesScreen);
@@ -30,7 +33,8 @@ app.register('play', playScreen);
 app.register('garage', garageScreen);
 app.register('settings', settingsScreen);
 app.register('records', recordsScreen);
-app.go('title');
+// ?classic opens the earlier golf game directly (its smoke test uses this).
+app.go(new URLSearchParams(window.location.search).has('classic') ? 'classic-golf' : 'title');
 
 // From the iOS Home Screen the viewport can come up short of the real screen, leaving a
 // dark band under fixed layers. There the app fills the whole screen, so size to it.

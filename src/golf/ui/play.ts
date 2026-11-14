@@ -776,7 +776,7 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
       actions.append(h('button', { class: 'btn ghost', text: kind === 'sandbox' ? 'Rebuild the house' : 'Restart', onClick: () => (s.close(), restart()) }));
       if (kind === 'challenge') actions.append(h('button', { class: 'btn ghost', text: 'Challenges', onClick: () => (s.close(), app.go('challenges')) }));
     }
-    actions.append(h('button', { class: 'btn ghost', text: 'Home', onClick: () => (s.close(), app.go('title')) }));
+    actions.append(h('button', { class: 'btn ghost', text: 'Home', onClick: () => (s.close(), app.go('classic-golf')) }));
     const body = h('div', { class: 'sheet-body dd dd-sheet' }, h('h2', { text: 'Paused' }), h('p', { class: 'dd-lede', text: houseDef ? `${houseDef.number} · ${houseDef.name}` : level.title }), toggle('Sound', 'sound'), toggle('Vibration', 'haptics'), toggle('Reduce motion', 'reducedMotion'), actions);
     const s = sheet(body, () => {
       paused = false;

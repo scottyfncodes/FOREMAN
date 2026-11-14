@@ -1,7 +1,7 @@
 {
   "name": "Foreman",
   "short_name": "Foreman",
-  "description": "A demolition puzzle. Pull back, let go, and find the weak spot that brings the house down.",
+  "description": "Golf-powered demolition puzzles. Touch a spot, pull back, let go, and find the one shot that brings the building down.",
   "id": "demo-day",
   "start_url": "./",
   "scope": "./",
