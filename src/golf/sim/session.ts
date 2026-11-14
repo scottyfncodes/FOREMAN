@@ -110,6 +110,9 @@ export class Session {
   onShot?: (r: ShotReport) => void;
   /** House mode: called once, on the shot that meets the objectives. */
   onComplete?: () => void;
+  /** A house ran out of shots short of its goal. */
+  onFail?: () => void;
+  failed = false;
   /** House mode: the objectives have been met (play carries on). */
   completed = false;
   /** Parts the player is pointed at (pins, weak points), for shot quality. */
@@ -169,6 +172,7 @@ export class Session {
   /** Takes a shot. Returns false (and spends nothing) if it is not allowed. */
   fire(shot: Shot): boolean {
     if (this.phase !== 'aim' || this.shotsLeft <= 0 || !this.canUse(shot.ball)) return false;
+    if (this.level.mode === 'house' && (this.completed || this.failed)) return false;
     const mods = this.mods();
     for (const p of this.armed) this.powerups[p] = (this.powerups[p] ?? 0) - 1;
     // Precision Mode covers this shot and the next two.
@@ -316,11 +320,14 @@ export class Session {
     this.phase = 'aim';
     const done = this.objectivesMet();
     if (this.level.mode === 'house') {
-      // Houses never end: meeting the objective opens the next one, and play carries on.
+      // A house is over when its goal is reached, or when the shots run out first.
       this.onShot?.(report);
       if (done && !this.completed) {
         this.completed = true;
         this.onComplete?.();
+      } else if (!done && this.shotsLeft <= 0 && !this.failed) {
+        this.failed = true;
+        this.onFail?.();
       }
       return;
     }

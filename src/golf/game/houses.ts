@@ -6,8 +6,9 @@ import type { SpecialId } from './rewards';
 
 /**
  * The PLAY campaign: a street of houses, each bigger than the last. Every
- * house has a destruction goal that opens the next one, and no shot limit:
- * the record to beat is how few shots it took. Damage stays between visits.
+ * house is a puzzle: bring a share of it down inside a shot budget. Par is what
+ * a careful bot manages; stars reward matching and beating it. Each attempt
+ * starts on a fresh house.
  * Special balls are hidden inside bricks, found by breaking them.
  */
 
@@ -21,6 +22,10 @@ export interface HouseDef {
   yard: LevelDef['yard'];
   /** Share of the house (percent) to bring down to open the next one. */
   goal: number;
+  /** Shots allowed. Out of shots short of the goal is a fail, and a retry. */
+  shots: number;
+  /** Shots a good player needs: what a careful bot does with standard balls alone. */
+  par: number;
   /** Special balls hidden in its bricks, and the kinds they can be. */
   hidden: number;
   pool: SpecialId[];
@@ -32,8 +37,11 @@ const pal = (k: keyof typeof PALETTES): HouseSpec['palette'] => PALETTES[k] as H
 /** How hard falling pieces hit in the campaign: collapses spread from piece to piece. */
 export const CAMPAIGN_CASCADE = 2.2;
 
+/** How big a hole a ball knocks in a campaign house: a standard ball takes out a patch of wall, not one brick. */
+export const CAMPAIGN_PUNCH = 3.4;
+
 /** A campaign house: the cascade on, and this many gas bottles in the spots tankSpots picks. */
-const rigged = (spec: HouseSpec, bottles: number): HouseSpec => ({ ...spec, cascade: CAMPAIGN_CASCADE, tanks: tankSpots(spec.width ?? 9, spec.storeys, bottles) });
+const rigged = (spec: HouseSpec, bottles: number): HouseSpec => ({ ...spec, cascade: CAMPAIGN_CASCADE, punch: CAMPAIGN_PUNCH, tanks: tankSpots(spec.width ?? 9, spec.storeys, bottles) });
 
 export const HOUSES: HouseDef[] = [
   {
@@ -44,6 +52,8 @@ export const HOUSES: HouseDef[] = [
     spec: rigged(house({ storeys: 1, porch: false, chimney: false, palette: pal('honey'), zones: [oldPatch('front', -4.5, 4.5, 0.6, 3.3)] }), 2),
     yard: yardBasic,
     goal: 15,
+    shots: 5,
+    par: 3,
     hidden: 3,
     pool: ['power'],
   },
@@ -54,7 +64,9 @@ export const HOUSES: HouseDef[] = [
     hint: 'Two columns hold up the porch roof. It only needs to lose one.',
     spec: rigged(house({ storeys: 1, chimney: false, palette: pal('rose') }), 3),
     yard: yardBasic,
-    goal: 20,
+    goal: 15,
+    shots: 6,
+    par: 4,
     hidden: 3,
     pool: ['power', 'heavy'],
   },
@@ -65,7 +77,9 @@ export const HOUSES: HouseDef[] = [
     hint: 'A second storey. The upper floors bear on the front wall just above the ground floor windows.',
     spec: rigged(house({ storeys: 2, porch: false, chimney: false, palette: pal('sand') }), 4),
     yard: yardBasic,
-    goal: 20,
+    goal: 25,
+    shots: 5,
+    par: 3,
     hidden: 4,
     pool: ['power', 'heavy', 'super'],
   },
@@ -76,7 +90,9 @@ export const HOUSES: HouseDef[] = [
     hint: 'The chimney stands on its own footing. From this tee you can see its base.',
     spec: rigged(house({ storeys: 2, palette: pal('honey'), teeX: 3 }), 4),
     yard: { ...yardBasic, trees: [{ x: -8, z: 7, s: 1 }] },
-    goal: 26,
+    goal: 30,
+    shots: 5,
+    par: 3,
     hidden: 4,
     pool: ['power', 'heavy', 'super'],
   },
@@ -87,7 +103,9 @@ export const HOUSES: HouseDef[] = [
     hint: 'A wider front. Undercut the bottom courses and the wall above has nothing to stand on.',
     spec: rigged(house({ storeys: 2, chimney: false, width: 10.8, palette: pal('classic'), zones: [oldPatch('front', -5.4, 5.4, 0.6, 2.1)] }), 5),
     yard: yardBasic,
-    goal: 32,
+    goal: 30,
+    shots: 6,
+    par: 4,
     hidden: 5,
     pool: ['power', 'heavy', 'super', 'multi'],
   },
@@ -99,6 +117,8 @@ export const HOUSES: HouseDef[] = [
     spec: rigged(house({ storeys: 2, width: 10.8, depth: 7.2, palette: pal('slate') }), 6),
     yard: yardParty,
     goal: 32,
+    shots: 5,
+    par: 3,
     hidden: 5,
     pool: ['power', 'heavy', 'super', 'multi'],
   },
@@ -110,6 +130,8 @@ export const HOUSES: HouseDef[] = [
     spec: rigged(house({ storeys: 3, porch: false, chimney: false, width: 10.8, depth: 7.2, palette: pal('rose') }), 7),
     yard: yardBasic,
     goal: 40,
+    shots: 5,
+    par: 3,
     hidden: 6,
     pool: ['power', 'heavy', 'super', 'multi', 'blast'],
   },
@@ -120,7 +142,9 @@ export const HOUSES: HouseDef[] = [
     hint: 'The lower courses are reinforced. Break them with weight, or start higher up.',
     spec: rigged(house({ storeys: 3, chimney: false, width: 12.6, depth: 7.2, palette: pal('sand'), zones: [reinforced('front', -6.3, 6.3, 0.6, 1.5)] }), 7),
     yard: yardParty,
-    goal: 40,
+    goal: 35,
+    shots: 5,
+    par: 3,
     hidden: 6,
     pool: ['power', 'heavy', 'super', 'multi', 'blast'],
   },
@@ -131,7 +155,9 @@ export const HOUSES: HouseDef[] = [
     hint: 'The corners carry the most, and the old brick at the front corners is the weak spot.',
     spec: rigged(house({ storeys: 3, width: 12.6, depth: 7.2, palette: pal('classic'), zones: [oldPatch('front', -6.3, -4.2, 0.6, 9), oldPatch('front', 4.2, 6.3, 0.6, 9)] }), 8),
     yard: yardParty,
-    goal: 45,
+    goal: 42,
+    shots: 5,
+    par: 3,
     hidden: 7,
     pool: ['power', 'heavy', 'super', 'multi', 'blast'],
   },
@@ -142,7 +168,9 @@ export const HOUSES: HouseDef[] = [
     hint: 'The biggest house on the street, a breeze from the left, and every trick you have learned.',
     spec: rigged(house({ storeys: 3, width: 14.4, depth: 8.4, palette: pal('honey'), zones: [reinforced('front', -7.2, 7.2, 0.6, 1.2), oldPatch('left', -8.1, -0.3, 0.6, 9)] }), 9),
     yard: yardParty,
-    goal: 50,
+    goal: 42,
+    shots: 6,
+    par: 4,
     hidden: 8,
     pool: ['power', 'heavy', 'super', 'multi', 'blast'],
     wind: { x: 0.4, z: 0 },
@@ -157,7 +185,15 @@ export function houseObjective(h: HouseDef): Objective {
   return { kind: 'destruction', pct: h.goal };
 }
 
-/** The house as a level the session can run: no shot limit, one goal. */
+/**
+ * Stars for a house: one for reaching the goal inside the shot budget, two for doing it at
+ * par, three for beating par.
+ */
+export function houseStars(h: HouseDef, used: number): number {
+  return used < h.par ? 3 : used === h.par ? 2 : 1;
+}
+
+/** The house as a level the session can run: a shot budget and one goal. */
 export function houseLevel(h: HouseDef): LevelDef {
   return {
     id: h.id,
@@ -167,8 +203,8 @@ export function houseLevel(h: HouseDef): LevelDef {
     blurb: h.hint,
     house: h.spec,
     yard: h.yard,
-    shots: Infinity,
-    par: Infinity,
+    shots: h.shots,
+    par: h.par,
     objectives: [houseObjective(h)],
     balls: {},
     powerups: {},

@@ -3,7 +3,7 @@ import { h } from '../../ui/dom';
 import { ICON } from '../../ui/icons';
 import { sheet } from '../../ui/screens/common';
 import { isCancel, pullFrom } from '../game/controls';
-import { getHouse, hiddenBalls, houseLevel, type HouseDef } from '../game/houses';
+import { getHouse, hiddenBalls, houseLevel, houseStars, type HouseDef } from '../game/houses';
 import { TAG_LABEL, TAG_ORDER, type ShotTag, type Tier } from '../game/quality';
 import { SPECIALS, stash, type SpecialId } from '../game/rewards';
 import { shotAt, type AimedShot } from '../game/solve';
@@ -72,10 +72,10 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
 
   const build = (): Session => {
     if (houseDef) {
+      // Every attempt starts on a fresh house: it is a puzzle, not a renovation.
       const world = new World(level.house, level.yard, 7);
-      const snap = store.loadHouse(houseDef.id);
-      // A snapshot that does not fit this house (an old build) is dropped, and the house starts fresh.
-      if (snap && !world.restore(snap)) store.clearHouse(houseDef.id);
+      store.clearHouse(houseDef.id);
+      if (houseRec) houseRec.shots = 0;
       return new Session(level, 7, { world, ammo: econ.inventory as Partial<Record<BallId, number>>, fastResolve: true });
     }
     return new Session(level, 7, { fastResolve: true });
@@ -250,11 +250,11 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
     const share = session.world.destruction() * 100;
     const d = share > 0 && share < 10 ? share.toFixed(1) : String(Math.floor(share));
     if (kind === 'house' && houseDef) {
-      const shots = houseRec?.shots ?? 0;
-      titleEl.replaceChildren(h('span', { class: 'dd-no', text: houseDef.number }), h('b', { text: houseDef.name }), h('span', { class: 'dd-down', text: `${shots} shot${shots === 1 ? '' : 's'}` }));
+      const left = session.shotsLeft;
+      titleEl.replaceChildren(h('span', { class: 'dd-no', text: houseDef.number }), h('b', { text: houseDef.name }), h('span', { class: `dd-down${left <= 1 ? ' last' : ''}`, text: `${left} shot${left === 1 ? '' : 's'} left` }));
       const goal = houseDef.goal;
       const done = session.completed;
-      objText.textContent = done ? `Goal reached in ${houseRec?.doneIn || shots}. Keep going, or move on.` : `Bring ${goal}% down`;
+      objText.textContent = done ? `Down in ${session.shotsUsed}.` : `Bring ${goal}% down · par ${houseDef.par}`;
       objCount.textContent = `${d}%`;
       objFill.style.transform = `scaleX(${Math.min(1, share / goal)})`;
       objBar.setAttribute('aria-valuenow', String(Math.round(Math.min(1, share / goal) * 100)));
@@ -319,7 +319,7 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
   // -------------------------------------------------------------- pulling
 
   let drag: { id: number; y0: number; x0: number; armed: boolean } | null = null;
-  const blocked = (): boolean => modal || paused || resultShown || session.phase !== 'aim' || session.shotsLeft <= 0;
+  const blocked = (): boolean => modal || paused || resultShown || session.phase !== 'aim' || session.shotsLeft <= 0 || (kind === 'house' && (session.completed || session.failed));
 
   /** What is under a screen point: the first solid thing along the view ray, or the lawn. */
   const pick = (sx: number, sy: number): { x: number; y: number; z: number } | null => {
@@ -620,7 +620,8 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
 
   const onComplete = (): void => {
     if (!houseDef) return;
-    const next = store.completeHouse(houseDef);
+    const stars = houseStars(houseDef, session.shotsUsed);
+    const next = store.completeHouse(houseDef, session.shotsUsed, stars);
     persist();
     window.setTimeout(() => {
       app.play('houseDown');
@@ -632,32 +633,72 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
       window.setTimeout(() => {
         stamp.remove();
         el.classList.remove('celebrate');
-        showHouseDone(next);
+        showHouseDone(next, stars);
       }, 1900);
     }, 900);
   };
 
-  const showHouseDone = (next: HouseDef | undefined): void => {
+  /** The caddie: dry, unimpressed, on your side. */
+  let quips = 0;
+  const caddie = (kind: 'three' | 'two' | 'one' | 'fail'): string => {
+    const lines = {
+      three: ['That will play.', 'I would not have hit that. Glad you did.', 'Do not let it go to your head.'],
+      two: ['Par. Nobody ever bought a round for par.', 'Down is down. Could be prettier.'],
+      one: ['Ugly. It counts.', 'We do not have to tell anybody how many that took.'],
+      fail: ['Still standing. So is your pride, barely.', 'The house is laughing at you. I am only smiling.', 'You were never going to lay up. I know.'],
+    }[kind];
+    return lines[quips++ % lines.length] as string;
+  };
+  const starRow = (n: number): HTMLElement => h('p', { class: 'dd-stars', role: 'img', 'aria-label': `${n} of 3 stars` }, ...[0, 1, 2].map((i) => h('span', { class: i < n ? 'on' : '', text: '★' })));
+
+  const showHouseDone = (next: HouseDef | undefined, stars: number): void => {
     if (!houseDef || !houseRec) return;
     modal = true;
-    const best = houseRec.bestIn && houseRec.bestIn < houseRec.doneIn ? ` Your best is ${houseRec.bestIn}.` : houseRec.bestIn === houseRec.doneIn && houseRec.doneIn ? ' A new best.' : '';
+    const used = session.shotsUsed;
     const body = h(
       'div',
       { class: 'sheet-body dd dd-sheet' },
-      h('p', { class: 'dd-kicker', text: `House ${houseDef.number} · goal reached` }),
+      h('p', { class: 'dd-kicker', text: `House ${houseDef.number} · down` }),
       h('h2', { text: houseDef.name }),
-      h('p', { class: 'dd-lede', text: `${houseDef.goal}% down in ${houseRec.doneIn} shot${houseRec.doneIn === 1 ? '' : 's'}.${best}` }),
+      starRow(stars),
+      h('p', { class: 'dd-quote', text: caddie(stars === 3 ? 'three' : stars === 2 ? 'two' : 'one') }),
+      h('p', { class: 'dd-lede', text: `${houseDef.goal}% down in ${used} shot${used === 1 ? '' : 's'}. Par is ${houseDef.par}.${stars < 3 ? ` Three stars takes ${houseDef.par - 1}.` : ''}` }),
       houseRec.bestChain >= CHAIN_SHOW ? h('p', { class: 'dd-note', text: `Biggest chain here: ${houseRec.bestChain} pieces from one shot.` }) : null,
-      next ? h('p', { class: 'dd-note', text: `Next up: ${next.name}, a bigger house. Fewer shots is better: rebuild any house from the pause menu to beat your count.` }) : h('p', { class: 'dd-note', text: 'That was the biggest house on the street. Rebuild any of them from the pause menu and beat your shot count.' }),
     );
     const actions = h('div', { class: 'sheet-actions stack' });
     if (next) actions.append(h('button', { class: 'btn primary lg', onClick: () => (s.close(), app.go('golf', { id: next.id })) }, h('span', { text: `Next house` })));
-    actions.append(h('button', { class: `btn ${next ? 'ghost' : 'primary'}`, text: 'Keep smashing this one', onClick: () => s.close() }));
+    actions.append(h('button', { class: `btn ${next ? 'ghost' : 'primary'}`, text: stars < 3 ? 'Go again for more stars' : 'Play it again', onClick: () => (s.close(), restart()) }));
     body.append(actions);
     const s = sheet(body, () => {
       modal = false;
       renderAll();
     });
+  };
+
+  const onFail = (): void => {
+    if (!houseDef) return;
+    const got = Math.floor(session.world.destruction() * 100);
+    window.setTimeout(() => {
+      app.play('fail');
+      modal = true;
+      const body = h(
+        'div',
+        { class: 'sheet-body dd dd-sheet' },
+        h('p', { class: 'dd-kicker', text: `House ${houseDef.number} · out of shots` }),
+        h('h2', { text: 'Still standing' }),
+        h('p', { class: 'dd-quote', text: caddie('fail') }),
+        h('p', { class: 'dd-lede', text: `${got}% down. It needed ${houseDef.goal}%.` }),
+        h('p', { class: 'dd-note', text: 'The yellow pulse marks what is holding the most up. Gas bottles take out everything near them. Special balls are hidden in the bricks.' }),
+      );
+      const actions = h('div', { class: 'sheet-actions stack' });
+      actions.append(h('button', { class: 'btn primary lg', onClick: () => (s.close(), restart()) }, h('span', { text: 'Try again' })));
+      actions.append(h('button', { class: 'btn ghost', text: 'Houses', onClick: () => (s.close(), app.go('houses')) }));
+      body.append(actions);
+      const s = sheet(body, () => {
+        modal = false;
+        renderAll();
+      });
+    }, 900);
   };
 
   const finishRun = (): void => {
@@ -803,6 +844,7 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
   const wire = (): void => {
     session.onShot = onShot;
     session.onComplete = onComplete;
+    session.onFail = onFail;
   };
   const restart = (): void => {
     endPull();
@@ -835,7 +877,6 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
   /** Writes the house as it stands. Anything still moving is settled first. */
   const persist = (): void => {
     if (!houseDef) return;
-    store.saveHouse(houseDef.id, session.world.snapshot());
     store.save();
     snapDirty = false;
   };

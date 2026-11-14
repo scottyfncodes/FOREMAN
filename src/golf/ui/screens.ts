@@ -53,7 +53,7 @@ export function golfTitleScreen(app: App): ScreenInstance {
     'button',
     { class: 'dd-play', onClick: () => (app.play('select'), app.go('golf', { id: hd.id })) },
     h('span', { class: 'dd-play-label', text: started ? 'Play' : 'Start' }),
-    h('span', { class: 'dd-play-sub', text: rec.done ? 'Goal reached. Keep smashing' : rec.shots > 0 ? `${rec.shots} shot${rec.shots === 1 ? '' : 's'} so far` : 'Fresh house' }),
+    h('span', { class: 'dd-play-sub', text: `${hd.shots} shots · par ${hd.par}${rec.stars ? ` · ${'★'.repeat(rec.stars)}` : ''}` }),
   );
   const link = (label: string, go: () => void): HTMLElement => h('button', { class: 'dd-link', onClick: () => (app.play('tap'), go()) }, h('span', { text: label }));
   const el = h(
@@ -109,7 +109,8 @@ export function golfHousesScreen(app: App): ScreenInstance {
     const prog = open && rec?.shots ? houseProgress(store, hd) : null;
     const best = rec?.bestIn ? `Best: goal in ${rec.bestIn} shot${rec.bestIn === 1 ? '' : 's'}` : '';
     const chain = rec && rec.bestChain >= 5 ? `best chain ${rec.bestChain}` : '';
-    const status = !open ? 'Locked' : [prog ? `${prog.down}% down · ${rec?.shots ?? 0} shot${rec?.shots === 1 ? '' : 's'}` : 'Not started', best, chain].filter(Boolean).join(' · ');
+    const status = !open ? 'Locked' : [`${hd.goal}% in ${hd.shots} shots, par ${hd.par}`, rec?.stars ? '★'.repeat(rec.stars) + '☆'.repeat(3 - rec.stars) : 'Not cleared', best, chain].filter(Boolean).join(' · ');
+    void prog;
     const found = (rec?.found.length ?? 0);
     return h(
       'li',
@@ -224,7 +225,7 @@ export function golfSettingsScreen(app: App): ScreenInstance {
       'section',
       { class: 'dd-panel' },
       h('h3', { text: 'More' }),
-      h('button', { class: 'dd-row', onClick: () => (app.play('tap'), app.go('title')) }, h('span', { class: 'dd-row-no', html: GICON.crane }), h('span', { class: 'dd-row-main' }, h('b', { text: 'Back to Foreman' }), h('small', { text: 'The new jobs: golf shots against load-bearing structures.' }))),
+      h('button', { class: 'dd-row', onClick: () => (app.play('tap'), app.go('frames')) }, h('span', { class: 'dd-row-no', html: GICON.crane }), h('span', { class: 'dd-row-main' }, h('b', { text: 'Frame Jobs' }), h('small', { text: 'An experiment: the same golf shot against bare structures and their load paths.' }))),
       h('button', { class: 'dd-row', onClick: () => (app.play('tap'), app.go('classic')) }, h('span', { class: 'dd-row-no', html: GICON.crane }), h('span', { class: 'dd-row-main' }, h('b', { text: 'Crew Contracts' }), h('small', { text: 'The original machine-and-moves game. Its save is separate and untouched.' }))),
     ),
     h(

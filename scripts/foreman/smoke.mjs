@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs';
 import { chromium, devices } from '@playwright/test';
 
-const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/FOREMAN/';
+const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/FOREMAN/?frames=1';
 const DEVICE = process.env.SMOKE_DEVICE ?? 'iPhone 13';
 const solutions = JSON.parse(readFileSync(new URL('../../tests/foreman-solutions.json', import.meta.url), 'utf8'));
 const fail = (msg) => { console.error(`FAIL: ${msg}`); process.exitCode = 1; };

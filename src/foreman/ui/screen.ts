@@ -273,7 +273,7 @@ class Foreman {
     card.append(
       el('h2', '', 'SETTINGS'),
       toggle('Sound', 'sound'), toggle('Vibration', 'haptics'), toggle('Less shake and motion', 'calm'),
-      el('div', 'fm-links', link('Classic: the brick houses, Daily Demo, Sandbox and Challenges', '', () => this.app.go('classic-golf')), reset),
+      el('div', 'fm-links', link('Back to the houses', '', () => this.app.go('title')), reset),
       el('div', 'fm-card-actions one', this.button('Done', 'primary', () => scrim.remove())),
     );
     scrim.append(card);

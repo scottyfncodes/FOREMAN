@@ -210,6 +210,9 @@ export class World {
   fuses = new Map<number, number>();
   /** How hard falling pieces hit (from the house spec). */
   readonly cascade: number;
+  /** How big a hole a ball knocks (from the house spec). */
+  readonly punch: number;
+  private splash: Part[] = [];
   load: Float64Array;
   private grid = new Map<number, number[]>();
   private stamp: Uint32Array;
@@ -231,6 +234,7 @@ export class World {
     this.info = info;
     this.rng = new Rng(seed);
     this.cascade = info.cascade;
+    this.punch = info.punch;
     this.stamp = new Uint32Array(parts.length);
     this.load = new Float64Array(parts.length);
     this.heights = new Float32Array(HF_NX * HF_NZ);
@@ -621,6 +625,18 @@ export class World {
         }
       }
       broke = allBroke;
+      // A ball with punch takes the pieces around the one it hit, fading with distance: a hole, not a chip.
+      if (this.punch > 1) {
+        const r = 0.46 * this.punch;
+        this.splash.length = 0;
+        this.query(c.px - r, c.py - r, c.pz - r, c.px + r, c.py + r, c.pz + r, this.splash);
+        for (const q of this.splash) {
+          if (q === p || q.id === seamWith || q.state !== PartState.Intact || !q.solid) continue;
+          const d = Math.hypot(q.x - c.px, q.y - c.py, q.z - c.pz);
+          if (d >= r) continue;
+          this.damagePart(q, raw * (1 - d / r) * 1.1, 'ball', b.id, q.x, q.y, q.z, b);
+        }
+      }
       // Heavy balls shove the parts around the one they hit.
       if (def.knock > 0) {
         for (const nb of [...p.lateral, ...p.supporting, ...p.groups.flat()]) {
