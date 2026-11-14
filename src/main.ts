@@ -33,7 +33,8 @@ app.register('play', playScreen);
 app.register('garage', garageScreen);
 app.register('settings', settingsScreen);
 app.register('records', recordsScreen);
-app.go('title');
+// ?classic opens the earlier golf game directly (its smoke test uses this).
+app.go(new URLSearchParams(window.location.search).has('classic') ? 'classic-golf' : 'title');
 
 // From the iOS Home Screen the viewport can come up short of the real screen, leaving a
 // dark band under fixed layers. There the app fills the whole screen, so size to it.

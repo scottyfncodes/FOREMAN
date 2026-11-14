@@ -699,10 +699,12 @@ export class View {
     const cpz = Math.cos(yaw) * Math.cos(pitch) * cdist;
     // Tee pose: over the golfer's shoulder, the whole building above them.
     const apx = cx + (portrait ? 0.9 : 1.6);
-    const apy = portrait ? 2.7 : 2.4;
-    const apz = TEE_Z + (portrait ? 4.8 : 4.4);
+    // Tall buildings push the tee camera back so the ground floor stays in view.
+    const tallBy = Math.max(0, maxY - 9);
+    const apy = (portrait ? 2.7 : 2.4) + tallBy * 0.3;
+    const apz = TEE_Z + (portrait ? 4.8 : 4.4) + tallBy * 1.1;
     const alx = cx;
-    const aly = Math.max(2.2, maxY * 0.52);
+    const aly = Math.max(2.2, maxY * 0.47);
     const adist = Math.hypot(apz, apy - aly);
     const halfW = (maxX - minX) / 2 + 2.2;
     const fovW = (2 * Math.atan(Math.tan(Math.atan(halfW / adist)) / this.camera.aspect) * 180) / Math.PI;

@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "icons": "node scripts/generate-icons.mjs",
-    "smoke": "node scripts/golf-smoke.mjs && node scripts/smoke.mjs",
+    "smoke": "node scripts/foreman/smoke.mjs && node scripts/golf-smoke.mjs && node scripts/smoke.mjs",
     "tune": "vitest run --config scripts/vitest.tune.config.ts --disableConsoleIntercept scripts/tune",
     "check": "pnpm typecheck && pnpm test && pnpm build",
     "probe": "vitest run --config scripts/foreman/vitest.config.ts --disableConsoleIntercept scripts/foreman/probe"
