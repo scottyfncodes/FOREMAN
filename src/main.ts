@@ -1,6 +1,7 @@
 import './styles.css';
 import './golf/ui/golf.css';
 import { App } from './app';
+import { foremanScreen } from './foreman/ui/screen';
 import { golfPlayScreen } from './golf/ui/play';
 import { golfChallengesScreen, golfHousesScreen, golfSettingsScreen, golfTitleScreen } from './golf/ui/screens';
 import { briefScreen } from './ui/screens/brief';
@@ -15,8 +16,10 @@ const root = document.getElementById('app');
 if (!root) throw new Error('Missing #app root');
 
 const app = new App(root);
-// The golf game.
-app.register('title', golfTitleScreen);
+// FOREMAN: golf shots against load-bearing structures. The front door.
+app.register('title', foremanScreen);
+// The earlier golf game (brick houses, Daily Demo, Sandbox, Challenges), kept whole under Settings.
+app.register('classic-golf', golfTitleScreen);
 app.register('houses', golfHousesScreen);
 app.register('challenges', golfChallengesScreen);
 app.register('levels', golfChallengesScreen);

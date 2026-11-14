@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Foreman: a demolition puzzle for the phone browser.",
+  "description": "FOREMAN: golf-powered structural demolition puzzles for the phone browser.",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "vite",
@@ -15,7 +15,8 @@
     "icons": "node scripts/generate-icons.mjs",
     "smoke": "node scripts/golf-smoke.mjs && node scripts/smoke.mjs",
     "tune": "vitest run --config scripts/vitest.tune.config.ts --disableConsoleIntercept scripts/tune",
-    "check": "pnpm typecheck && pnpm test && pnpm build"
+    "check": "pnpm typecheck && pnpm test && pnpm build",
+    "probe": "vitest run --config scripts/foreman/vitest.config.ts --disableConsoleIntercept scripts/foreman/probe"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
@@ -30,6 +31,9 @@
     ]
   },
   "dependencies": {
+    "@fontsource/barlow-condensed": "^5.3.0",
+    "@fontsource/saira-stencil-one": "^5.3.0",
+    "planck": "1.4.2",
     "three": "0.170.0"
   }
 }
