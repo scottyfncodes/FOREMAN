@@ -218,3 +218,5 @@ body.fm {
   .fm-blast.ready { animation: none; }
 }
 .fm-layer > .fm-fx { position: absolute; inset: 0; pointer-events: none; }
+.fm-title { isolation: isolate; }
+.fm-scrim { z-index: 20; }

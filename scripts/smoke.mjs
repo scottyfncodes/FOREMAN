@@ -6,7 +6,7 @@
 import { existsSync, mkdirSync } from 'node:fs';
 import { chromium, devices } from '@playwright/test';
 
-const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/FOREMAN/';
+const BASE = process.env.SMOKE_URL ?? 'http://localhost:4173/FOREMAN/?archive=1';
 const OUT = 'smoke-output';
 mkdirSync(OUT, { recursive: true });
 

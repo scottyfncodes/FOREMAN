@@ -141,6 +141,8 @@ export class Foreman {
     if (this.mode === 'play' && this.hud) {
       top = this.hud.top.getBoundingClientRect().bottom + 6;
       bottom = h - this.hud.bottom.getBoundingClientRect().top + 8;
+      // On a short, wide screen the controls sit in the corners: let the building use the height.
+      if (h < 520 && w > h) { top *= 0.75; bottom *= 0.3; }
     } else if (this.mode === 'title') {
       top = h * 0.3;
       bottom = h * 0.24;
@@ -465,7 +467,8 @@ export class Foreman {
     if (!this.hud) return;
     const p = this.view.project(x, y);
     const n = el('div', `fm-note ${cls}`, text);
-    n.style.left = `${Math.max(50, Math.min(this.root.clientWidth - 50, p.x))}px`;
+    const half = 12 + text.length * 4.2;
+    n.style.left = `${Math.max(half, Math.min(this.root.clientWidth - half, p.x))}px`;
     n.style.top = `${Math.max(120, p.y - 12)}px`;
     this.hud.fx.append(n);
     window.setTimeout(() => n.remove(), 1750);
@@ -473,6 +476,7 @@ export class Foreman {
 
   private stamp(text: string, sub: string, cls: string): void {
     if (!this.hud) return;
+    this.hud.fx.querySelectorAll('.fm-stamp').forEach((o) => o.remove());
     const s = el('div', `fm-stamp ${cls}`, text, sub ? el('small', '', sub) : null);
     this.hud.fx.append(s);
     window.setTimeout(() => s.remove(), 1600);

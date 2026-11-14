@@ -1,7 +1,7 @@
 {
   "name": "Foreman",
   "short_name": "Foreman",
-  "description": "A demolition puzzle. Pull back, let go, and find the weak spot that brings the house down.",
+  "description": "A demolition puzzle. Every building has a weak point. Find it, set one charge, and watch it come down.",
   "id": "demo-day",
   "start_url": "./",
   "scope": "./",

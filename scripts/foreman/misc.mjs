@@ -1,0 +1,36 @@
+import { chromium } from '@playwright/test';
+const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const out = 'scripts/foreman/shots';
+async function open(vp, mobile) {
+  const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: 1, hasTouch: mobile, isMobile: mobile });
+  const page = await ctx.newPage();
+  page.on('pageerror', (e) => console.log('ERR', String(e)));
+  await page.goto('http://localhost:5173/FOREMAN/');
+  await page.waitForFunction(() => window.__foreman);
+  await page.waitForTimeout(600);
+  return page;
+}
+let page = await open({ width: 393, height: 852 }, true);
+await page.evaluate(() => { const g = window.__foreman; g.store.win('hut', 3, 2000, true, 1); g.store.win('frame', 2, 2500, false, 2); g.showJobs(); });
+await page.waitForTimeout(300);
+await page.screenshot({ path: `${out}/jobs.png` });
+await page.evaluate(() => { const g = window.__foreman; g.store.data.seen = []; g.startLevel(2); });
+await page.waitForTimeout(500);
+await page.screenshot({ path: `${out}/lesson.png` });
+await page.click('.fm-card .fm-btn');
+await page.click('.fm-loads');
+await page.waitForTimeout(300);
+await page.screenshot({ path: `${out}/loads.png` });
+await page.evaluate(() => window.__foreman.showTitle());
+await page.click('.fm-title-row .icon');
+await page.waitForTimeout(300);
+await page.screenshot({ path: `${out}/settings.png` });
+page = await open({ width: 1280, height: 720 }, false);
+await page.evaluate(() => { const g = window.__foreman; g.store.data.seen = ['flats']; g.startLevel(6); });
+await page.waitForTimeout(500);
+await page.screenshot({ path: `${out}/desktop.png` });
+page = await open({ width: 844, height: 390 }, true);
+await page.evaluate(() => { const g = window.__foreman; g.store.data.seen = ['stack']; g.startLevel(3); });
+await page.waitForTimeout(500);
+await page.screenshot({ path: `${out}/landscape.png` });
+await browser.close();

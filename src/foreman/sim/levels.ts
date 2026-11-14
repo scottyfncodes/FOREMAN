@@ -90,7 +90,7 @@ function terrace(): LevelDef {
   }
   d.roof('timber', -0.2, 8.7, W + 0.4, 1.3);
   return {
-    id: 'terrace', name: 'Mill Row', kind: 'Brick terrace, timber floors', members: d.members, lineY: 3.3, charges: 3, par: 1,
+    id: 'terrace', name: 'Mill Row', kind: 'Brick terrace, timber floors', members: d.members, lineY: 4.0, charges: 3, par: 1,
     brief: 'Brick is heavy. Timber floors only reach so far.',
     lesson: { title: 'Spans snap', body: 'A floor stretched between two supports bends. Take out the support in the middle and the span doubles. Too far and it snaps.' },
   };
@@ -108,7 +108,7 @@ function stack(): LevelDef {
   }
   d.box('steel', 0.4, 10, 2.2, 1.0);
   // Next door: a house that has to still be there afterwards.
-  const nx = 5.2;
+  const nx = 4.1;
   for (const p of [true]) {
     d.box('brick', nx, 0, 0.5, 2.6, { protect: p });
     d.box('brick', nx + 3.5, 0, 0.5, 2.6, { protect: p });
@@ -129,24 +129,24 @@ function shop(): LevelDef {
   const W = 6.6;
   for (let f = 0; f < 2; f++) {
     const y = f * 3.1;
-    d.box('brick', -0.1, y, 0.8, 2.8);
-    d.box('brick', 3.0, y, 0.6, 2.8);
-    d.box('brick', 5.9, y, 0.8, 2.8);
-    d.box('concrete', -0.1, y + 2.8, W + 0.2, 0.3);
+    d.box('brick', -0.1, y, 0.8, 2.7);
+    d.box('brick', 2.7, y, 1.2, 2.7);
+    d.box('brick', 5.9, y, 0.8, 2.7);
+    d.box('concrete', -0.1, y + 2.7, W + 0.2, 0.4);
   }
   // Ground floor: a blank wall on the left, shop window on the right.
-  const wall = d.infill('brick', 0.7, 0, 2.3, 2.8, { hidden: 'gas' });
-  d.infill('brick', 3.6, 0, 2.3, 0.7);
-  d.pane(3.6, 0.7, 2.3, 2.1);
-  for (const x of [0.7, 3.6]) { d.infill('brick', x, 3.1, 2.3, 0.9); d.pane(x + 0.6, 4.0, 1.2, 1.3); }
+  const wall = d.infill('brick', 0.7, 0, 2.0, 2.7, { hidden: 'gas' });
+  d.infill('brick', 3.9, 0, 2.0, 0.7);
+  d.pane(3.9, 0.7, 2.0, 2.0);
+  for (const x of [0.7, 3.9]) { d.infill('brick', x, 3.1, 2.0, 0.9); d.pane(x + 0.4, 4.0, 1.2, 1.3); }
   d.roof('timber', -0.3, 6.2, W + 0.6, 1.5);
   d.pipe(-1.6, 0.15, 0.3, 0.15);
   d.pipe(0.3, 0.15, 0.3, 1.2);
-  d.pipe(0.3, 1.2, 1.5, 1.2, wall);
+  d.pipe(0.3, 1.2, 1.4, 1.2, wall);
   return {
-    id: 'shop', name: 'Corner Shop', kind: 'Brick shop, concrete floors', members: d.members, pipes: d.pipes, lineY: 3.5, charges: 1, par: 1,
-    brief: 'One charge. Follow the yellow pipe.',
-    lesson: { title: 'Gas does the work', body: 'A yellow pipe always ends at a gas bottle. Break the wall it runs into and the bottle goes off, taking everything close with it.' },
+    id: 'shop', name: 'Corner Shop', kind: 'Brick shop, concrete floors', members: d.members, pipes: d.pipes, lineY: 3.8, charges: 1, par: 1,
+    brief: 'One charge, and no bottles in sight. Follow the yellow pipe.',
+    lesson: { title: 'Follow the pipe', body: 'A yellow pipe always ends at a gas bottle, even when the bottle is sealed behind a wall. Break that wall and it goes off, taking everything close with it.' },
   };
 }
 
@@ -165,9 +165,9 @@ function apartments(): LevelDef {
     d.box('concrete', -0.2, y + 2.75, 10.45, 0.25);
   }
   return {
-    id: 'flats', name: 'Harbour Flats', kind: 'Concrete apartment block', members: d.members, lineY: 5.0, charges: 3, par: 2,
-    brief: 'Concrete takes two charges. Or one, and enough weight.',
-    lesson: { title: 'Weaken, then load', body: 'The first charge on concrete only cracks it. Cracked concrete holds less than half. Find the column that is already cracked.' },
+    id: 'flats', name: 'Harbour Flats', kind: 'Concrete apartment block', members: d.members, lineY: 5.0, charges: 2, par: 1,
+    brief: 'Concrete takes two charges. Or one, in the right place.',
+    lesson: { title: 'Weaken, then load', body: 'The first charge on concrete only cracks it. Cracked concrete holds less than half. If the weight on it is more than that, it goes without a second charge.' },
   };
 }
 
@@ -182,17 +182,17 @@ function warehouse(): LevelDef {
   // Sawtooth roof.
   for (let i = 0; i < 3; i++) d.roof('steel', xs[i] + 0.2, 5.5, 3.9, 1.3, 'shedL');
   // Gas store along the back wall, and a locked cage of supplies.
-  for (const x of [0.8, 3.0, 5.0, 7.0, 9.0, 11.2]) d.box('gas', x, 0, 0.4, 0.7);
-  d.box('crate', 6.0, 0, 0.7, 0.7);
+  for (const x of [0.8, 2.6, 4.9, 9.2, 11.1]) d.box('gas', x, 0, 0.4, 0.7);
+  d.box('crate', 6.1, 0, 0.7, 0.7);
   for (let b = 0; b < 3; b++) { d.infill('steel', xs[b] + 0.4, 1.2, 3.7, 1.2); d.pane(xs[b] + 0.4, 2.4, 3.7, 1.0); }
   return {
-    id: 'shed', name: 'Dockside Shed', kind: 'Steel warehouse on brick piers', members: d.members, lineY: 4.4, charges: 2, par: 1,
+    id: 'shed', name: 'Dockside Shed', kind: 'Steel warehouse on brick piers', members: d.members, lineY: 4.9, charges: 1, par: 1,
     brief: 'Charges will not cut steel. Something else in here will.',
-    lesson: { title: 'Chain it', body: 'Steel shrugs off charges. But a gas bottle sets off every bottle near it, and the piers under the frame are only brick.' },
+    lesson: { title: 'Chain it', body: 'Steel shrugs off charges. But a gas bottle goes off when it is hit, sets off every bottle near it, and the piers under this frame are only brick.' },
   };
 }
 
-export const LEVELS: LevelDef[] = [hut(), frameHouse(), terrace(), stack(), shop(), apartments(), warehouse()];
+export const LEVELS: LevelDef[] = [hut(), frameHouse(), terrace(), stack(), warehouse(), shop(), apartments()];
 
 export function levelById(id: string): LevelDef | undefined {
   return LEVELS.find((l) => l.id === id);

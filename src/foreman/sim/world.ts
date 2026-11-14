@@ -312,7 +312,7 @@ export class Sim {
   }
 
   cleared(): boolean {
-    return this.aboveMass() <= this.targetMass * 0.015;
+    return this.aboveMass() <= this.targetMass * 0.04;
   }
 
   /** The piece under a point, preferring small pieces (they are the hard ones to hit). */

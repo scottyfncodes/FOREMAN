@@ -1,6 +1,6 @@
 # Foreman
 
-A casual demolition puzzle for the phone browser. A street of little brick houses, a tee, and a bag of golf balls. Every brick, pane, floor, beam and roof tile is its own piece: find the weak spot, take it out, and watch the rest come down. Damage stays put, so you can take a few shots, close the app, and pick up the same half-wrecked house later.
+A demolition puzzle for the phone browser. Every building stands because its weight has somewhere to go. Find the one piece that changes that, set a charge on it, and the physics does the rest.
 
 **Play it:** https://scottyfncodes.github.io/FOREMAN/
 
@@ -8,36 +8,24 @@ Add it to your iPhone Home Screen (Share → Add to Home Screen) for full-screen
 
 ## How it plays
 
-- **Shoot** with one thumb: touch the spot you want to hit, then pull back. The pull sets power; the flight bends to reach your spot, so a full pull at a low brick is a flat drive and a soft pull is a lob. The guide shows the flight to the first thing it touches. Let go to shoot, or let go before the ring fills to only move your aim. On a keyboard, arrows move the aim, W and S set power, Space shoots.
-- **Chain reactions** are the way to bring a house down in few shots. In the campaign, Daily Demo and Sandbox, falling pieces hit hard and heavy ones (roof sections, floors) send a shock into whatever they land on, so one collapse breaks the next. **Red gas bottles** stand outside the front corners and inside behind them and upstairs: hit one, or drop something on it, and it goes off a beat later, setting off any bottle within reach and blowing out the load-bearing brick around it. A counter climbs while a chain spreads; big chains slow time and score on their own, and each house keeps your best chain. (Challenges keep the original physics, so their recorded par runs still hold.)
-- **Weak points** pulse yellow while you aim: the standing parts whose loss would bring the most down, and the gas bottles still waiting.
-- **Shot quality**: one headline per shot, the best thing it did: CLEAN HIT, PERFECT AIM, WINDOW ENTRY, MULTI HIT, SEAM SHOT, BANK SHOT, CHAIN REACTION, SUPPORT DOWN, HOUSE DOWN. Small hits tick, critical supports slow time, big collapses shake the lot.
-- **Special balls are hidden in the bricks.** Standard balls are unlimited. Each house hides a few special balls inside its bricks, always in the same bricks; break one and the ball pops out into your bag. A row of slots shows how many are still hidden, but not what they are.
+- **Tap a piece, press BLAST.** A charge removes that piece. You get a few charges per job; three stars for doing it in par.
+- **Get everything below the red line.** Some jobs add a neighbour you must not hit.
+- **Loads move.** Take a support away and its neighbours carry the difference. Overloaded pieces crack, hold for a moment, then go, and hand their load to the next ones. That is the chain.
+- **Read before you cut.** Stressed pieces already show cracks. LOADS colours every piece by how close it is to its limit. Selecting a piece tells you what it is holding.
+- **Materials.** Timber and brick take one charge. Concrete takes two: the first cracks it to under half strength. Steel cannot be cut. Glass and infill panels hold nothing up.
+- **Gas.** A bottle goes off when hit and sets off any bottle near it. A yellow pipe always ends at one, even when it is sealed behind a wall.
+- **KEYSTONE.** Bring down half a building with one charge and the job is marked with it.
 
-| Ball | What it does |
-| --- | --- |
-| Standard | Unlimited, predictable. Breaks brick and glass; the seam-shot ball |
-| Power | Faster and heavier, punches through brick and reinforced courses |
-| Superball | Keeps its bounce off every surface. Made for windows, rooms and bank shots |
-| Multiball | Five balls in a fan, each with its own flight and hits |
-| Heavy | Three times the mass on a dropping flight; shoves supports out |
-| Charge | Goes off on the first hard contact |
-
-## Modes
-
-- **Play**: ten houses on a street, each bigger than the last, from a one-storey cottage to a three-storey house 14 m wide. Each has a destruction goal (15% on the cottage up to 50% on the biggest) that opens the next one. There is no shot limit; the record to beat is how few shots it took. Damage stays between visits, and any house can be rebuilt to try for fewer shots (balls already found stay found).
-- **Daily Demo**: one house per date, the same on every device. Eight shots, scored on damage and skill, with your recent days kept on this device.
-- **Sandbox**: every special ball, unlimited.
-- **Challenges**: the original ten trick-shot levels, the precision shots and Score Attack, with shot limits, stars and medals.
-- **Crew Contracts**: the original machine-and-moves game, kept whole under Settings with its own save.
+Seven jobs: a timber hut, a frame house, a brick terrace, a tower beside a house, a steel shed, a corner shop and a concrete apartment block. Each teaches one rule. See `docs/FOREMAN_DESIGN.md`.
 
 ## How it is built
 
-- **Game layer** (`src/golf/game/`): pull-back controls, shot quality, the reward economy and the campaign houses, all pure and tested. See `docs/PUZZLE_PLAN.md`.
-- **Simulation** (`src/golf/sim/`): deterministic and fixed-step (120 Hz). A settled world snapshots to a compact list of what changed (`World.snapshot()` / `restore()`), which is how houses keep their damage. `house.ts` lays out the house brick by brick on a 0.3 m grid with openings, lintels, floors, partitions, stairs, roof decks and tiles, chimney, porch, furniture and garden, and links what rests on what. `world.ts` flies the balls (sub-stepped sphere-vs-box, so nothing tunnels), resolves damage and seam shots, solves support and load, and drops loose parts as tumbling debris that lands on rubble. `session.ts` is the shot budget, ammo, power-ups, scoring and objectives, read only from simulation events. `levels.ts` holds every level as data.
-- **Rendering** (`src/golf/render/`): three.js. Bricks and other box parts are instanced (one draw call per size and material), furniture and garden pieces are merged single meshes, effects are pooled. Nothing in the renderer writes to the simulation.
-- **UI** (`src/golf/ui/`): plain DOM over the canvas, touch first, safe-area aware.
-- **Save**: progress is stored under its own key (`demo-day:golf`, version 2, migrated in place from version 1) and each house's damage under `demo-day:golf:house:<id>`; the Crew Contracts save (`demo-day:save`) is never read, changed or reset by the golf game.
+- **Simulation** (`src/foreman/sim/`): a load solver (`structure.ts`) owns everything that is standing; planck.js rigid bodies exist only for what has come loose (`world.ts`). Fixed step, deterministic. Levels are data (`levels.ts`).
+- **Game** (`src/foreman/game/session.ts`): charges, chain, score and verdict, read only from simulation events.
+- **Rendering** (`src/foreman/render/`): three.js, one instanced draw call for the pieces, procedural materials and cracks, pooled debris and dust.
+- **UI** (`src/foreman/ui/`): plain DOM over the canvas, touch first, safe-area aware.
+- **Save**: `foreman:v1` in localStorage.
+- **Archive**: the earlier Demo Day games (golf demolition and crew contracts) are kept whole in `src/golf`, `src/wreck`, `src/game`, `src/ui` and load on their own page from Settings (`?archive=1`). Their saves are untouched.
 - Procedural Web Audio sound. PWA manifest and service worker.
 
 ## Development
@@ -45,12 +33,12 @@ Add it to your iPhone Home Screen (Share → Add to Home Screen) for full-screen
 ```sh
 pnpm install
 pnpm dev          # local dev server
-pnpm test         # vitest: physics, structure, controls, rewards, saves, every house finished with the real controls, every challenge at par
+pnpm test         # vitest: load solver, every level at rest and solved, determinism, rules; plus the archive games' suites
 pnpm typecheck    # tsc --noEmit
 pnpm build        # production build to dist/
 pnpm check        # all three
-pnpm preview && pnpm smoke   # headless iPhone runs of the golf game and Crew Contracts
-pnpm tune         # slow local searches (level solutions, medal thresholds)
+pnpm probe        # tries every single strike on every level and prints what happens
+pnpm preview && pnpm smoke   # headless iPhone plays every job; then the archive smokes
 ```
 
 Deployed to GitHub Pages by `.github/workflows/deploy.yml` on every push to `main`.

@@ -146,6 +146,11 @@ export class View {
     ground.receiveShadow = true;
     this.scene.add(ground);
 
+    this.pad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshLambertMaterial({ color: '#c9bc9d' }));
+    this.pad.rotation.x = -Math.PI / 2;
+    this.pad.receiveShadow = true;
+    this.scene.add(this.pad);
+
     this.scene.add(new THREE.HemisphereLight('#f4f7fb', '#a8916c', 1.55));
     const sun = new THREE.DirectionalLight('#fff1d6', 2.1);
     sun.position.set(-14, 26, 22);
@@ -198,6 +203,7 @@ export class View {
   }
 
   private sun: THREE.DirectionalLight;
+  private pad: THREE.Mesh;
 
   private rand(): number {
     this.rnd = (this.rnd * 16807) % 2147483647;
@@ -261,11 +267,13 @@ export class View {
       maxY = Math.max(maxY, m.y + m.h);
     }
     this.bounds = { minX, maxX, maxY };
+    this.pad.scale.set(maxX - minX + 7, 7.5, 1);
+    this.pad.position.set((minX + maxX) / 2, 0.012, 0.6);
 
     // The line everything has to end up under.
     this.line.clear();
     const lineMat = new THREE.MeshBasicMaterial({ color: PALETTE.red });
-    const span = maxX - minX + 9;
+    const span = maxX - minX + 60;
     for (let x = -span / 2; x < span / 2; x += 0.62) {
       const dash = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.07, 0.03), lineMat);
       dash.position.set((minX + maxX) / 2 + x + 0.18, level.lineY, FRONT + 0.32);

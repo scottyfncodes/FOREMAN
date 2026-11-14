@@ -3,7 +3,7 @@ import { chromium } from '@playwright/test';
 const [, , idx = '0', strikes = '', times = '300,900,1800,5000', mode = 'play'] = process.argv;
 const url = process.env.URL ?? 'http://localhost:5173/FOREMAN/';
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true });
+const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: Number(process.env.DSF ?? 2), hasTouch: true, isMobile: true });
 const page = await ctx.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
