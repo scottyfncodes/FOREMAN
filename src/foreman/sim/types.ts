@@ -25,8 +25,8 @@ export interface MatDef {
 
 export const MATS: Record<Mat, MatDef> = {
   timber: { label: 'Timber', density: 420, crush: 90_000, bend: 420_000, shatter: 15, blast: 0.22, hp: 1, friction: 0.62, bounce: 0.08 },
-  brick: { label: 'Brick', density: 1500, crush: 150_000, bend: 90_000, shatter: 8.5, blast: 0.34, hp: 1, friction: 0.74, bounce: 0.03 },
-  concrete: { label: 'Concrete', density: 2200, crush: 520_000, bend: 1_500_000, shatter: 17, blast: 0.55, hp: 2, friction: 0.7, bounce: 0.03 },
+  brick: { label: 'Brick', density: 1500, crush: 240_000, bend: 90_000, shatter: 8.5, blast: 0.34, hp: 1, friction: 0.74, bounce: 0.03 },
+  concrete: { label: 'Concrete', density: 1500, crush: 520_000, bend: 1_500_000, shatter: 17, blast: 0.55, hp: 2, friction: 0.7, bounce: 0.03 },
   steel: { label: 'Steel', density: 1300, crush: 1_400_000, bend: 9_000_000, shatter: 1e9, blast: 1, hp: 0, friction: 0.5, bounce: 0.1 },
   glass: { label: 'Glass', density: 150, crush: 20_000, bend: 12_000, shatter: 1.6, blast: 0, hp: 1, friction: 0.4, bounce: 0.02 },
   gas: { label: 'Gas bottle', density: 380, crush: 200_000, bend: 1e9, shatter: 1e9, blast: 0, hp: 1, friction: 0.6, bounce: 0.15 },

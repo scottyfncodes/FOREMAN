@@ -15,6 +15,8 @@ const MIN_OVER = 0.13;
 /** Landing speed that starts to knock a falling chunk apart. */
 const DETACH = 1.7;
 const GAS_RADIUS = 2.3;
+/** How long a propped chunk holds together. */
+const LEAN_TIME = 0.28;
 
 export interface Member {
   id: number;
@@ -65,6 +67,9 @@ interface BodyData {
   pvy: number;
   pw: number;
   dirty: boolean;
+  /** Seconds this chunk has spent leaning on something. Joints only hold in free fall. */
+  lean: number;
+  touched: boolean;
 }
 
 export interface Pose {
@@ -122,7 +127,7 @@ export class Sim {
     this.world = new PWorld({ gravity: new Vec2(0, -G), allowSleep: true });
     const ground = this.world.createBody({ type: 'static', position: new Vec2(0, 0) });
     ground.createFixture({ shape: new Box(400, 2, new Vec2(0, -2), 0), friction: 0.8, restitution: 0.02, userData: -1 });
-    ground.setUserData({ members: [], pvx: 0, pvy: 0, pw: 0, dirty: false } satisfies BodyData);
+    ground.setUserData({ members: [], pvx: 0, pvy: 0, pw: 0, dirty: false, lean: 0, touched: false } satisfies BodyData);
     level.members.forEach((d, i) => this.addMember(d, i));
     this.link();
     this.world.on('post-solve', (c, imp) => this.onContact(c, imp));
@@ -172,7 +177,7 @@ export class Sim {
     };
     this.members.push(m);
     const body = this.world.createBody({ type: 'static', position: new Vec2(m.x, m.y) });
-    body.setUserData({ members: [m.id], pvx: 0, pvy: 0, pw: 0, dirty: false } satisfies BodyData);
+    body.setUserData({ members: [m.id], pvx: 0, pvy: 0, pw: 0, dirty: false, lean: 0, touched: false } satisfies BodyData);
     m.body = body;
     m.fix = this.makeFixture(body, m, 0, 0);
     return m;
@@ -502,7 +507,7 @@ export class Sim {
 
   private makeBody(group: number[], x: number, y: number, a: number, local: (m: Member) => [number, number], from: Body | null): Body {
     const body = this.world.createBody({ type: 'dynamic', position: new Vec2(x, y), angle: a, angularDamping: 0.05, linearDamping: 0.01 });
-    body.setUserData({ members: group, pvx: 0, pvy: 0, pw: 0, dirty: false } satisfies BodyData);
+    body.setUserData({ members: group, pvx: 0, pvy: 0, pw: 0, dirty: false, lean: 0, touched: false } satisfies BodyData);
     for (const id of group) {
       const m = this.members[id];
       const [lx, ly] = local(m);
@@ -726,6 +731,8 @@ export class Sim {
     const vay = da.pvy + da.pw * (p.x - pa.x);
     const vbx = db.pvx - db.pw * (p.y - pb.y);
     const vby = db.pvy + db.pw * (p.x - pb.x);
+    da.touched = true;
+    db.touched = true;
     const approach = (vax - vbx) * nx + (vay - vby) * ny;
     if (approach < 1.1) return;
     if (ma) ma.hit += j;
@@ -783,6 +790,24 @@ export class Sim {
       if (m.state === GONE) continue;
       if (v > MATS[m.mat].shatter * (m.layer === 1 ? 0.5 : 1)) this.breakMember(m, 'impact');
       else if (m.state === LOOSE && v > DETACH) this.detach(m, Math.min(4, Math.floor(v / DETACH)));
+    }
+    // Joints are no good at carrying a chunk that is propped or wedged: it comes apart.
+    for (let b = this.world.getBodyList(); b; b = b.getNext()) {
+      if (!b.isDynamic()) continue;
+      const d = b.getUserData() as BodyData;
+      if (d.touched && d.members.length > 1) {
+        d.lean += DT;
+        if (d.lean > LEAN_TIME) {
+          for (const id of d.members) {
+            const q = this.members[id];
+            for (const o of q.bonds) this.members[o].bonds.delete(id);
+            q.bonds.clear();
+          }
+          d.dirty = true;
+          this.dirtyBodies.add(b);
+        }
+      }
+      d.touched = false;
     }
     if (this.pendingImpacts.length) {
       this.pendingImpacts.sort((p, q) => q.j - p.j);

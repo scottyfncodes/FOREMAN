@@ -142,7 +142,8 @@ export function solve(nodes: SNode[], alive: Uint8Array): SolveOut {
         tipped = true;
         break;
       }
-      let u = total / (nd.crushPerM * Math.max(bear, 0.02));
+      // Spanning pieces fail in bending; only posts, piers and walls are checked for crushing.
+      let u = nd.bendCap > 0 ? 0 : total / (nd.crushPerM * Math.max(bear, 0.02));
       let md = 0;
       let sx = 0;
       if (nd.bendCap > 0) {
