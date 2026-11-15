@@ -65,6 +65,8 @@ export interface HouseSpec {
   cascade?: number;
   /** How big a hole a ball knocks: 1 is one brick, 2 takes the bricks around it too. Campaign houses use more. */
   punch?: number;
+  /** Multiplies what every wall, lintel, column and beam can carry. Below 1 the house is closer to its limit, so a loss spreads. */
+  strength?: number;
   /** Gas bottles: go off when hit or hit, and set each other off. y is the floor they stand on (default the ground). */
   tanks?: Array<{ x: number; z: number; y?: number }>;
 }
@@ -104,6 +106,8 @@ export interface HouseInfo {
   cascade: number;
   /** Ball punch (see HouseSpec.punch). */
   punch: number;
+  /** Structural strength (see HouseSpec.strength). */
+  strength: number;
   trees: Array<{ x: number; z: number; s: number }>;
 }
 
@@ -892,6 +896,7 @@ export function buildLevel(spec: HouseSpec, yard: YardSpec): { parts: Part[]; in
     trees: yard.trees,
     cascade: spec.cascade ?? 1,
     punch: spec.punch ?? 1,
+    strength: spec.strength ?? 1,
   };
   return { parts: b.parts, info };
 }

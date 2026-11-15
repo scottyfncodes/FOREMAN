@@ -145,7 +145,7 @@ describe('persistent houses', () => {
     const e = emptyEconomy();
     e.inventory.power = 1;
     const s = new Session(houseLevel(h1), 7, { ammo: e.inventory });
-    expect(s.level.objectives).toEqual([{ kind: 'destruction', pct: h1.goal }]);
+    expect(s.level.objectives).toEqual([{ kind: 'roof', pct: h1.goal }]);
     let done = 0;
     s.onComplete = () => done++;
     s.fire(solvePull(s.world, 'power', { x: -1.2, y: 1.5, z: 0.02 })!.shot);

@@ -372,6 +372,8 @@ export class Session {
       }
       case 'destruction':
         return [Math.floor(this.world.destruction() * 100), o.pct];
+      case 'roof':
+        return [Math.floor(this.world.roofDown() * 100), o.pct];
       case 'wall': {
         const mine = (p: Part): boolean => p.wall === o.wall && (p.kind === 'brick' || p.kind === 'lintel') && !p.tags.includes('gable');
         return [Math.floor((n(mine) / Math.max(1, all(mine))) * 100), o.pct];

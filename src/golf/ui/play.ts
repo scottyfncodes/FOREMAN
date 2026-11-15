@@ -252,12 +252,12 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
     if (kind === 'house' && houseDef) {
       const left = session.shotsLeft;
       titleEl.replaceChildren(h('span', { class: 'dd-no', text: houseDef.number }), h('b', { text: houseDef.name }), h('span', { class: `dd-down${left <= 1 ? ' last' : ''}`, text: `${left} shot${left === 1 ? '' : 's'} left` }));
-      const goal = houseDef.goal;
       const done = session.completed;
-      objText.textContent = done ? `Down in ${session.shotsUsed}.` : `Bring ${goal}% down · par ${houseDef.par}`;
-      objCount.textContent = `${d}%`;
-      objFill.style.transform = `scaleX(${Math.min(1, share / goal)})`;
-      objBar.setAttribute('aria-valuenow', String(Math.round(Math.min(1, share / goal) * 100)));
+      const roof = session.world.roofDown() * 100;
+      objText.textContent = done ? `Roof down in ${session.shotsUsed}.` : `Bring the roof down · par ${houseDef.par}`;
+      objCount.textContent = `${Math.floor(roof)}%`;
+      objFill.style.transform = `scaleX(${Math.min(1, roof / houseDef.goal)})`;
+      objBar.setAttribute('aria-valuenow', String(Math.round(Math.min(1, roof / houseDef.goal) * 100)));
       card.classList.toggle('done', done);
     } else if (kind === 'daily' || kind === 'sandbox' || level.mode === 'score') {
       titleEl.replaceChildren(h('span', { class: 'dd-no', text: level.number }), h('b', { text: level.title }), h('span', { class: 'dd-down', text: `${d}% down` }));
@@ -596,6 +596,8 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
 
   // ------------------------------------------------------- shot results
 
+  let roofBefore = 0;
+  let shotQuips = 0;
   const onShot = (r: ShotReport): void => {
     const q = r.quality;
     if (q.headline) showHeadline(q.headline, '');
@@ -606,6 +608,25 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
     }
     window.setTimeout(() => chainEl.classList.remove('show'), 1600);
     if (kind === 'house' && houseRec && houseDef) {
+      // The caddie has a word after every shot that did not finish the job.
+      const roofNow = session.world.roofDown();
+      if (!session.completed && session.shotsLeft > 0) {
+        const gain = roofNow - roofBefore;
+        const pick = (lines: string[]): string => lines[shotQuips++ % lines.length] as string;
+        window.setTimeout(
+          () =>
+            say(
+              gain > 0.3 ? pick(['Now you are talking.', 'There goes half the roof.'])
+                : gain > 0.02 ? pick(['That moved it. Not enough.', 'It felt that one.'])
+                : r.share > 0.03 ? pick(['Nice hole. Roof did not notice.', 'Lot of bricks. Same roof.'])
+                : r.entered ? pick(['Through the window. The furniture is terrified.', 'Inside job. Wrong inside.'])
+                : pick(['You got its attention.', 'The house is not worried yet.', 'Try the part that holds something up.']),
+              3200,
+            ),
+          1700,
+        );
+      }
+      roofBefore = roofNow;
       houseRec.bestChain = Math.max(houseRec.bestChain, q.chain);
       houseRec.bestPct = Math.max(houseRec.bestPct, Math.floor(session.world.destruction() * 100));
       store.save();
@@ -662,7 +683,7 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
       h('h2', { text: houseDef.name }),
       starRow(stars),
       h('p', { class: 'dd-quote', text: caddie(stars === 3 ? 'three' : stars === 2 ? 'two' : 'one') }),
-      h('p', { class: 'dd-lede', text: `${houseDef.goal}% down in ${used} shot${used === 1 ? '' : 's'}. Par is ${houseDef.par}.${stars < 3 ? ` Three stars takes ${houseDef.par - 1}.` : ''}` }),
+      h('p', { class: 'dd-lede', text: `Roof down in ${used} shot${used === 1 ? '' : 's'}. Par is ${houseDef.par}.${stars < 3 ? ` Three stars takes ${houseDef.par - 1}.` : ''}` }),
       houseRec.bestChain >= CHAIN_SHOW ? h('p', { class: 'dd-note', text: `Biggest chain here: ${houseRec.bestChain} pieces from one shot.` }) : null,
     );
     const actions = h('div', { class: 'sheet-actions stack' });
@@ -677,7 +698,7 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
 
   const onFail = (): void => {
     if (!houseDef) return;
-    const got = Math.floor(session.world.destruction() * 100);
+    const got = Math.floor(session.world.roofDown() * 100);
     window.setTimeout(() => {
       app.play('fail');
       modal = true;
@@ -687,8 +708,8 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
         h('p', { class: 'dd-kicker', text: `House ${houseDef.number} · out of shots` }),
         h('h2', { text: 'Still standing' }),
         h('p', { class: 'dd-quote', text: caddie('fail') }),
-        h('p', { class: 'dd-lede', text: `${got}% down. It needed ${houseDef.goal}%.` }),
-        h('p', { class: 'dd-note', text: 'The yellow pulse marks what is holding the most up. Gas bottles take out everything near them. Special balls are hidden in the bricks.' }),
+        h('p', { class: 'dd-lede', text: got > 0 ? `${got}% of the roof came down. The job is all of it.` : 'The roof never moved. The job is to bring it down.' }),
+        h('p', { class: 'dd-note', text: 'A roof sits on the tops of the walls and on the ridge between the gable ends. Take enough of that away and it has nowhere to stay. The yellow pulse marks what is holding the most up.' }),
       );
       const actions = h('div', { class: 'sheet-actions stack' });
       actions.append(h('button', { class: 'btn primary lg', onClick: () => (s.close(), restart()) }, h('span', { text: 'Try again' })));
@@ -856,6 +877,7 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
     pins = pinsFor(session);
     weakDirty = true;
     resultShown = false;
+    roofBefore = 0;
     modal = false;
     paused = false;
     ball = 'standard';
