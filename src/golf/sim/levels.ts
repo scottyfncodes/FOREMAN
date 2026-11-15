@@ -401,7 +401,7 @@ export function objectiveText(o: Objective): string {
     case 'destruction':
       return `Demolish ${o.pct}% of the house`;
     case 'roof':
-      return 'Bring the roof down';
+      return o.pct >= 90 ? 'Bring the roof down' : o.pct >= 40 ? 'Drop half the roof' : 'Drop a third of the roof';
     case 'wall':
       return `Bring down ${o.pct}% of the ${o.wall} wall`;
     case 'decor':

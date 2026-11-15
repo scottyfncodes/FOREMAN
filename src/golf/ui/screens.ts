@@ -2,7 +2,7 @@ import type { App, ScreenInstance } from '../../app';
 import { h } from '../../ui/dom';
 import { ICON } from '../../ui/icons';
 import { sheet } from '../../ui/screens/common';
-import { HOUSES, houseLevel, type HouseDef } from '../game/houses';
+import { HOUSES, houseLevel, type HouseDef, roofJob } from '../game/houses';
 import { SPECIALS } from '../game/rewards';
 import { GolfRenderer, type ViewState } from '../render/scene';
 import { BALLS, type BallId } from '../sim/balls';
@@ -68,7 +68,7 @@ export function golfTitleScreen(app: App): ScreenInstance {
         { class: 'dd-house-line', 'aria-label': 'All houses', onClick: () => (app.play('tap'), app.go('houses')) },
         h('span', { class: 'dd-kicker', text: `House ${hd.number} of ${HOUSES.length}` }),
         h('b', { text: hd.name }),
-        h('span', { class: 'dd-house-obj' }, h('span', { text: 'Bring the roof down' }), h('span', { class: 'dd-house-count', text: prog.label })),
+        h('span', { class: 'dd-house-obj' }, h('span', { text: roofJob(hd.goal) }), h('span', { class: 'dd-house-count', text: prog.label })),
         h('span', { class: 'dd-obj-bar' }, h('i', { class: 'dd-obj-fill', style: `transform:scaleX(${prog.share})` })),
       ),
       inv.length ? h('div', { class: 'dd-inv', 'aria-label': 'Special balls' }, ...inv.map((b) => h('span', { class: 'dd-inv-ball', title: BALLS[b].name }, h('span', { class: 'dd-swatch', html: ballSwatch(b, 22) }), h('b', { text: String(store.data.economy.inventory[b]) })))) : null,
@@ -108,7 +108,7 @@ export function golfHousesScreen(app: App): ScreenInstance {
     const prog = open && rec?.shots ? houseProgress(store, hd) : null;
     const best = rec?.bestIn ? `Best: goal in ${rec.bestIn} shot${rec.bestIn === 1 ? '' : 's'}` : '';
     const chain = rec && rec.bestChain >= 5 ? `best chain ${rec.bestChain}` : '';
-    const status = !open ? 'Locked' : [`Roof down in ${hd.shots} shots, par ${hd.par}`, rec?.stars ? '★'.repeat(rec.stars) + '☆'.repeat(3 - rec.stars) : 'Not cleared', best, chain].filter(Boolean).join(' · ');
+    const status = !open ? 'Locked' : [`${roofJob(hd.goal)} in ${hd.shots} shots, par ${hd.par}`, rec?.stars ? '★'.repeat(rec.stars) + '☆'.repeat(3 - rec.stars) : 'Not cleared', best, chain].filter(Boolean).join(' · ');
     void prog;
     const found = (rec?.found.length ?? 0);
     return h(

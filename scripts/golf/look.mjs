@@ -5,7 +5,7 @@ const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=sw
 const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 1, hasTouch: true, isMobile: true });
 const page = await ctx.newPage();
 page.on('pageerror', (e) => console.log('ERR', String(e)));
-await page.goto('http://localhost:5173/FOREMAN/');
+await page.goto(process.env.URL ?? 'http://localhost:5173/FOREMAN/');
 await page.waitForFunction(() => window.__demoDay, null, { timeout: 60000 });
 await page.evaluate(() => { const a = window.__demoDay; a.golf.data.campaign.reached = 9; a.golf.data.coached = true; });
 await page.waitForTimeout(1200);

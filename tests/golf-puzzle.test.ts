@@ -141,23 +141,26 @@ describe('persistent houses', () => {
     expect(b.destruction()).toBe(0);
   });
 
-  it('a house session never ends: meeting the objective fires once and play carries on', () => {
+  it('a house session spends found balls, and ends on its shot budget: no shot is taken after the last', () => {
     const e = emptyEconomy();
     e.inventory.power = 1;
     const s = new Session(houseLevel(h1), 7, { ammo: e.inventory });
     expect(s.level.objectives).toEqual([{ kind: 'roof', pct: h1.goal }]);
+    expect(s.shotsLeft).toBe(h1.shots);
     let done = 0;
+    let failed = 0;
     s.onComplete = () => done++;
+    s.onFail = () => failed++;
     s.fire(solvePull(s.world, 'power', { x: -1.2, y: 1.5, z: 0.02 })!.shot);
     expect(e.inventory.power).toBe(0);
     expect(s.canUse('power')).toBe(false);
     settle(s);
-    for (let k = 0; k < 60 && !s.completed; k++) play(s, 'standard', -3.6 + (k % 12) * 0.6, 0.9 + (k % 3) * 0.3);
-    expect(s.completed).toBe(true);
-    expect(done).toBe(1);
-    play(s, 'standard', 3, 1.5);
+    // Low shots along the front wall never bring the roof down: the budget runs out.
+    for (let k = 0; k < 60 && s.shotsLeft > 0 && !s.completed; k++) play(s, 'standard', -3.6 + (k % 12) * 0.6, 0.9);
+    expect(s.shotsLeft).toBe(0);
+    expect(done + failed).toBe(1);
+    expect(s.fire(solvePull(s.world, 'standard', { x: 3, y: 1.5, z: 0.02 })!.shot)).toBe(false);
     expect(s.phase).toBe('aim');
-    expect(done).toBe(1);
     expect(s.result).toBeNull();
   });
 

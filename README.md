@@ -9,7 +9,7 @@ Add it to your iPhone Home Screen (Share → Add to Home Screen) for full-screen
 ## How it plays
 
 - **Touch the spot, pull back, let go.** The pull sets power; the flight bends to reach your spot. The guide shows the flight to the first thing it touches.
-- **Every house is a puzzle.** Bring a share of it down inside a shot budget. Out of shots short of the goal is a fail and an instant retry on a fresh house.
+- **Every house is a puzzle: bring the roof down** (all of it on most houses, half or a third on the gentlest) inside a shot budget. Out of shots short of the goal is a fail and an instant retry on a fresh house.
 - **Stars.** One for reaching the goal in budget, two for doing it at par, three for beating par. Par is what a careful bot manages with standard balls alone, so three stars takes something smarter: a gas chain, a special ball, a better read of the structure.
 - **A ball knocks a hole, not a chip.** In the campaign a standard ball takes out a patch of wall. Take the wrong patch and nothing follows. Take the bricks under a lintel, a corner, or a porch column and the load above has nowhere to go.
 - **Chain reactions.** Falling pieces hit hard and heavy ones send a shock into what they land on. Red gas bottles go off a beat after they are hit and set off any bottle in reach.
@@ -18,7 +18,7 @@ Add it to your iPhone Home Screen (Share → Add to Home Screen) for full-screen
 
 ## Modes
 
-- **Play**: ten houses, each bigger than the last, from a one-storey cottage to a three-storey house 14 m wide. Each has a destruction goal, a shot budget and a par.
+- **Play**: ten houses, each bigger than the last, from a one-storey cottage to a three-storey house 14 m wide. Each has a roof job, a shot budget and a par.
 - **Daily Demo**, **Sandbox**, **Challenges**: as before.
 - **Frame Jobs** (Settings): an experiment with the same golf shot against bare structures and a load solver. Not the main game.
 - **Crew Contracts** (Settings): the original machine-and-moves game, with its own save.
@@ -40,7 +40,7 @@ pnpm test         # vitest: physics, structure, controls, rewards, saves, every 
 pnpm typecheck    # tsc --noEmit
 pnpm build        # production build to dist/
 pnpm check        # all three
-pnpm par          # a greedy bot plays every house and records its line (sets par)
+pnpm par          # a greedy bot plays every house for its roof and records its line (sets par); also measures the weakest walls each house stands on
 pnpm preview && pnpm smoke   # headless iPhone runs
 ```
 

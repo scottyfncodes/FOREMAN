@@ -3,7 +3,7 @@ import { h } from '../../ui/dom';
 import { ICON } from '../../ui/icons';
 import { sheet } from '../../ui/screens/common';
 import { isCancel, pullFrom } from '../game/controls';
-import { getHouse, hiddenBalls, houseLevel, houseStars, type HouseDef } from '../game/houses';
+import { getHouse, hiddenBalls, houseLevel, houseStars, roofJob, type HouseDef } from '../game/houses';
 import { TAG_LABEL, TAG_ORDER, type ShotTag, type Tier } from '../game/quality';
 import { SPECIALS, stash, type SpecialId } from '../game/rewards';
 import { shotAt, type AimedShot } from '../game/solve';
@@ -254,7 +254,7 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
       titleEl.replaceChildren(h('span', { class: 'dd-no', text: houseDef.number }), h('b', { text: houseDef.name }), h('span', { class: `dd-down${left <= 1 ? ' last' : ''}`, text: `${left} shot${left === 1 ? '' : 's'} left` }));
       const done = session.completed;
       const roof = session.world.roofDown() * 100;
-      objText.textContent = done ? `Roof down in ${session.shotsUsed}.` : `Bring the roof down · par ${houseDef.par}`;
+      objText.textContent = done ? `Done in ${session.shotsUsed}.` : `${roofJob(houseDef.goal)} · par ${houseDef.par}`;
       objCount.textContent = `${Math.floor(roof)}%`;
       objFill.style.transform = `scaleX(${Math.min(1, roof / houseDef.goal)})`;
       objBar.setAttribute('aria-valuenow', String(Math.round(Math.min(1, roof / houseDef.goal) * 100)));
@@ -683,7 +683,7 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
       h('h2', { text: houseDef.name }),
       starRow(stars),
       h('p', { class: 'dd-quote', text: caddie(stars === 3 ? 'three' : stars === 2 ? 'two' : 'one') }),
-      h('p', { class: 'dd-lede', text: `Roof down in ${used} shot${used === 1 ? '' : 's'}. Par is ${houseDef.par}.${stars < 3 ? ` Three stars takes ${houseDef.par - 1}.` : ''}` }),
+      h('p', { class: 'dd-lede', text: `${roofJob(houseDef.goal)}: done in ${used} shot${used === 1 ? '' : 's'}. Par is ${houseDef.par}.${stars < 3 && houseDef.par > 1 ? ` Three stars takes ${houseDef.par - 1}.` : ''}` }),
       houseRec.bestChain >= CHAIN_SHOW ? h('p', { class: 'dd-note', text: `Biggest chain here: ${houseRec.bestChain} pieces from one shot.` }) : null,
     );
     const actions = h('div', { class: 'sheet-actions stack' });
@@ -708,7 +708,7 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
         h('p', { class: 'dd-kicker', text: `House ${houseDef.number} · out of shots` }),
         h('h2', { text: 'Still standing' }),
         h('p', { class: 'dd-quote', text: caddie('fail') }),
-        h('p', { class: 'dd-lede', text: got > 0 ? `${got}% of the roof came down. The job is all of it.` : 'The roof never moved. The job is to bring it down.' }),
+        h('p', { class: 'dd-lede', text: got > 0 ? `${got}% of the roof came down. The job needed ${houseDef.goal >= 90 ? 'all of it' : `${houseDef.goal}%`}.` : 'The roof never moved.' }),
         h('p', { class: 'dd-note', text: 'A roof sits on the tops of the walls and on the ridge between the gable ends. Take enough of that away and it has nowhere to stay. The yellow pulse marks what is holding the most up.' }),
       );
       const actions = h('div', { class: 'sheet-actions stack' });

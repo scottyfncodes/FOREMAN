@@ -52,11 +52,11 @@ export const HOUSES: HouseDef[] = [
     number: '01',
     name: 'Starter Cottage',
     hint: 'Touch where to hit, pull back for power, let go. A roof sits on its walls. This one barely does.',
-    spec: rigged(house({ storeys: 1, porch: false, chimney: false, palette: pal('honey'), zones: [oldPatch('front', -4.5, 4.5, 0.6, 3.3)] }), 2, 0.4),
+    spec: rigged(house({ storeys: 1, porch: false, chimney: false, palette: pal('honey'), zones: [oldPatch('front', -4.5, 4.5, 0.6, 3.3)] }), 2, 0.35),
     yard: yardBasic,
-    goal: 95,
-    shots: 3,
-    par: 1,
+    goal: 48,
+    shots: 4,
+    par: 2,
     hidden: 3,
     pool: ['power'],
   },
@@ -65,11 +65,11 @@ export const HOUSES: HouseDef[] = [
     number: '02',
     name: 'Porch House',
     hint: 'Two columns hold up the porch roof. The main roof needs its gable ends just as badly.',
-    spec: rigged(house({ storeys: 1, chimney: false, palette: pal('rose') }), 3, 0.4),
+    spec: rigged(house({ storeys: 1, chimney: false, palette: pal('rose') }), 3, 0.35),
     yard: yardBasic,
-    goal: 95,
-    shots: 4,
-    par: 2,
+    goal: 30,
+    shots: 5,
+    par: 3,
     hidden: 3,
     pool: ['power', 'heavy'],
   },
@@ -104,11 +104,11 @@ export const HOUSES: HouseDef[] = [
     number: '05',
     name: 'Wide Load',
     hint: 'Wide walls, long roof. Half of it will go before the other half thinks about it.',
-    spec: rigged(house({ storeys: 2, chimney: false, width: 10.8, palette: pal('classic'), zones: [oldPatch('front', -5.4, 5.4, 0.6, 2.1)] }), 5, 0.55),
+    spec: rigged(house({ storeys: 2, chimney: false, width: 10.8, palette: pal('classic'), zones: [oldPatch('front', -5.4, 5.4, 0.6, 2.1)] }), 5, 0.5),
     yard: yardBasic,
-    goal: 95,
-    shots: 4,
-    par: 2,
+    goal: 48,
+    shots: 3,
+    par: 1,
     hidden: 5,
     pool: ['power', 'heavy', 'super', 'multi'],
   },
@@ -182,6 +182,11 @@ export const HOUSES: HouseDef[] = [
 
 export function getHouse(id: string): HouseDef | undefined {
   return HOUSES.find((h) => h.id === id);
+}
+
+/** The job in words: how much of the roof has to come down. */
+export function roofJob(goal: number): string {
+  return goal >= 90 ? 'Bring the roof down' : goal >= 40 ? 'Drop half the roof' : 'Drop a third of the roof';
 }
 
 export function houseObjective(h: HouseDef): Objective {

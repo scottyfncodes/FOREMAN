@@ -11,21 +11,43 @@ describe that experiment.
 
 What changed in the house game:
 
-- **Puzzle loop.** Every house has a destruction goal, a hard shot budget and a par. Each
-  attempt starts on a fresh house. One star in budget, two at par, three under par.
-- **Par is measured.** `pnpm par` runs a greedy bot: each shot it tries a spread of targets
-  (gas bottles, the solver's weak points, a grid over the front wall) and keeps the one that
-  brings the most down, with standard balls at full pull. Its line is recorded in
-  `tests/golf-par.json` and replayed in the tests, so every goal is reachable at par.
+- **The job is the roof.** Opening a hole is not a payoff; a roof on the ground is. Each
+  house's goal is a share of its roof (tiles, decks, ridge) that has to come down: all of it
+  on seven houses, half on two, a third on one. A roof sits on the wall tops and on the
+  ridge between the gable ends, so the puzzle is what to take away.
+- **Houses stand near their limit.** `HouseSpec.strength` scales what the brick walls can
+  carry. `scripts/golf/stable.tune.test.ts` measures the weakest walls each house can
+  stand on untouched; each campaign house is set at or just above that, so it is stable
+  until hit and close enough to the edge that the right loss spreads.
 - **Ball punch.** In campaign houses a ball damages the pieces around the one it hits,
-  fading with distance (`HouseSpec.punch`, 3.4 in the campaign). Before this a full-power
-  ball moved the destruction meter by about 0.1%; now a well-placed one takes 10 to 19%.
-  Challenges, Daily and Sandbox keep punch 1, so their recorded solutions still hold.
-- **Setting.** The suburb is replaced by the driving range: warm low sun, hardpan, mesas,
-  telephone poles, pump jack, windmill, pickup, range balls, tumbleweeds, an armadillo, and
-  a pro in a straw hat.
+  fading with distance (`HouseSpec.punch`, 3.4). Challenges, Daily and Sandbox keep punch 1
+  and strength 1, so their recorded solutions still hold.
+- **Puzzle loop.** Hard shot budget, par, stars (one in budget, two at par, three under par
+  or the single shot where par is one). Each attempt starts on a fresh house.
+- **Par is measured.** `pnpm par` runs a greedy bot that each shot tries gas bottles, the
+  solver's weak points, a grid over the front wall and points along the eaves, gables and
+  ridge, keeping the one that drops the most roof. Its line is recorded in
+  `tests/golf-par.json` and replayed in the tests.
+- **Look.** Procedural surfaces on the existing instanced parts (`render/surface.ts`): brick
+  with tonal variation and a mortar recess, tiles with a lip and weathering, timber grain.
+  No extra draw calls. The setting is the West Texas range.
+- **Sound.** Thirteen cues rebuilt as layered synthesis (club strike, material impacts,
+  masonry, glass, timber, strain, collapse, gas), plus wind on the range.
+- **Caddie.** A line after every shot and on every result.
 
-Not verified: frame rate on a real phone, and whether it is fun.
+What this pass did not deliver, from the plan it came from:
+
+- **Hand-designed houses.** The ten houses are still the generator at different sizes. Their
+  hints are rewritten around the roof, but none was rebuilt around a single idea, and there
+  are ten, not thirty.
+- **Three houses the bot cannot fully unroof** (Starter Cottage, Porch House, Wide Load).
+  They have partial goals instead. A person may do better than the bot; that is unverified.
+- **New shot shapes, wind as a mechanic, a collapse camera.** Not done. The roof goal does
+  make height matter (eaves, gables, lobs onto tiles), which is some of what shot-making
+  was meant to add.
+
+Not verified: frame rate on a real phone, how the new sound actually sounds (it was written
+without being heard), and whether it is fun.
 
 ---
 
