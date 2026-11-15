@@ -71,7 +71,7 @@ export function surfaceAttribute(list: Part[]): THREE.InstancedBufferAttribute {
 const VERT_HEAD = /* glsl */ `
 attribute vec4 aSurf;
 varying vec3 vSurfPos;
-varying vec4 vSurf;
+flat varying vec4 vSurf;
 varying vec2 vSurfW;
 `;
 
@@ -91,7 +91,7 @@ vSurf = aSurf;
 
 const FRAG_HEAD = /* glsl */ `
 varying vec3 vSurfPos;
-varying vec4 vSurf;
+flat varying vec4 vSurf;
 varying vec2 vSurfW;
 float surfHash(vec3 p) {
   p = fract(p * 0.3183099 + 0.1);
@@ -122,7 +122,7 @@ const FRAG_BODY = /* glsl */ `
 {
   float sKind = floor(vSurf.w + 0.001);
   if (sKind > 0.5) {
-    float sSeed = fract(vSurf.w);
+    float sSeed = floor(fract(vSurf.w) * 2048.0 + 0.5) / 2048.0;
     vec3 sH = vSurf.xyz;
     vec3 sP = vSurfPos;
     // Distance to the nearest edge of the box face this fragment is on.
@@ -201,5 +201,5 @@ export function patchSurface(mat: THREE.MeshStandardMaterial): void {
       .replace('#include <common>', `#include <common>\n${FRAG_HEAD}`)
       .replace('#include <color_fragment>', `#include <color_fragment>\n${FRAG_BODY}`);
   };
-  mat.customProgramCacheKey = () => 'golf-surface-1';
+  mat.customProgramCacheKey = () => 'golf-surface-2';
 }
