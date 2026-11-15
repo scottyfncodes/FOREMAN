@@ -1039,10 +1039,15 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
     hidden,
   };
 
+  // The range is never quite still: a gust every few seconds, overlapping so it does not cut out.
+  const windTimer = window.setInterval(() => { if (!document.hidden) app.play('wind', 0.55); }, 5000);
+  app.play('wind', 0.45);
+
   return {
     el,
     destroy: () => {
       persist();
+      window.clearInterval(windTimer);
       cancelAnimationFrame(raf);
       window.removeEventListener('keydown', onKey);
       document.removeEventListener('visibilitychange', onHide);
