@@ -10,6 +10,7 @@ import { buildRange, type Range } from '../../foreman/render/range';
 import { buildEnv, type Env } from './env';
 import { Fx } from './fx';
 import { buildBird, buildCat, buildGolfer, buildModel, buildSquirrel } from './models';
+import { patchSurface, surfaceAttribute } from './surface';
 
 /**
  * Renders a golf demolition world with three.js. Reads the simulation, never
@@ -314,6 +315,9 @@ export class GolfRenderer {
     this.baseColor = parts.map((p) => p.color);
     const solid = new THREE.MeshStandardMaterial({ roughness: 0.82, metalness: 0 });
     const ghost = new THREE.MeshStandardMaterial({ roughness: 0.82, metalness: 0, transparent: true, opacity: 1 });
+    // Brick, tile, timber and plaster detail is worked out in the shader from each instance's own box.
+    patchSurface(solid);
+    patchSurface(ghost);
     const glass = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.42 });
     this.ghostGlass = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.42 });
     this.ghostMats = [ghost];
@@ -353,6 +357,7 @@ export class GolfRenderer {
       mesh.castShadow = cls === 's' || cls === 'sg';
       mesh.receiveShadow = cls === 's' || cls === 'sg';
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      if (cls === 's' || cls === 'sg') geo.setAttribute('aSurf', surfaceAttribute(list));
       list.forEach((p, i) => {
         tmpQ.setFromAxisAngle(X_AXIS, p.rot);
         tmpM.compose(tmpV.set(p.x, p.y, p.z), tmpQ, tmpS.set(1, 1, 1));

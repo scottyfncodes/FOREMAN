@@ -22,6 +22,8 @@ export type Objective =
   | { kind: 'chain'; n: number }
   | { kind: 'collapse'; what: 'roof' | 'porch' | 'chimney' | 'floor'; n: number }
   | { kind: 'destruction'; pct: number }
+  /** Share of the roof (tiles, decks, ridge) that has to come down. */
+  | { kind: 'roof'; pct: number }
   | { kind: 'wall'; wall: 'front' | 'back' | 'left' | 'right'; pct: number }
   | { kind: 'decor'; n: number }
   | { kind: 'score'; n: number };
@@ -398,6 +400,8 @@ export function objectiveText(o: Objective): string {
       return o.what === 'roof' ? `Drop ${o.n} roof sections` : o.what === 'porch' ? 'Drop the porch roof' : o.what === 'chimney' ? 'Bring down the chimney' : 'Collapse a floor';
     case 'destruction':
       return `Demolish ${o.pct}% of the house`;
+    case 'roof':
+      return o.pct >= 90 ? 'Bring the roof down' : o.pct >= 40 ? 'Drop half the roof' : 'Drop a third of the roof';
     case 'wall':
       return `Bring down ${o.pct}% of the ${o.wall} wall`;
     case 'decor':
