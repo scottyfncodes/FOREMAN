@@ -471,6 +471,13 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
     }
     app.play(ball === 'standard' ? 'thwack' : 'special', shot.power);
     app.buzz(8);
+    hypeAt = 0;
+    booms = 0;
+    if (kind === 'house') {
+      const last = session.shotsLeft === 0;
+      if (last) { shout('LAST BALL', 'cool', 'never lay up'); app.play('heartbeat', 1); }
+      else if (shot.power >= 0.97) { shout('FULL SEND', 'cool'); rattle(); }
+    }
     keyAim = false;
     shownTag = null;
     headline.classList.remove('show');
@@ -491,6 +498,108 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
 
   let shownTag: ShotTag | null = null;
   let headlineTimer = 0;
+  // ------------------------------------------------------- over the top
+  // Big reactions: shouts across the screen, flashes, a rattling HUD, confetti. All of it is
+  // layered on what the simulation actually did; none of it changes a result.
+  const calm = (): boolean => app.reducedMotion;
+  type Shout = { text: string; tone: 'hot' | 'gold' | 'boom' | 'cool'; sub: string; slot: string };
+  const shoutQueue: Shout[] = [];
+  let shoutBusyUntil = 0;
+  let shoutTimer = 0;
+  const pumpShouts = (): void => {
+    window.clearTimeout(shoutTimer);
+    const now = performance.now();
+    if (now < shoutBusyUntil) { shoutTimer = window.setTimeout(pumpShouts, shoutBusyUntil - now + 10); return; }
+    const next = shoutQueue.shift();
+    if (!next) return;
+    el.querySelectorAll('.dd-shout').forEach((o) => o.remove());
+    const node = h('div', { class: `dd-shout ${next.tone}`, 'aria-hidden': 'true' }, h('b', { text: next.text }), next.sub ? h('span', { text: next.sub }) : null);
+    node.style.setProperty('--tilt', `${(next.text.length % 2 ? -1 : 1) * (3 + (next.text.length % 4))}deg`);
+    // Size the word to the screen: long shouts get smaller letters, never clipped.
+    const wide = el.clientWidth || window.innerWidth;
+    node.style.setProperty('--fs', `${Math.round(Math.min(next.tone === 'boom' ? 120 : 96, (wide * 0.84) / (Math.max(4, next.text.length) * 0.78)))}px`);
+    el.append(node);
+    window.setTimeout(() => node.remove(), 1500);
+    shoutBusyUntil = now + 620;
+    if (shoutQueue.length) shoutTimer = window.setTimeout(pumpShouts, 630);
+  };
+  /** Shouts take turns. A newer shout of the same kind replaces one still waiting. */
+  const shout = (text: string, tone: Shout['tone'] = 'hot', sub = '', slot = text): void => {
+    const waiting = shoutQueue.findIndex((q) => q.slot === slot);
+    const item = { text, tone, sub, slot };
+    if (waiting >= 0) shoutQueue[waiting] = item;
+    else if (shoutQueue.length < 3) shoutQueue.push(item);
+    pumpShouts();
+  };
+  const flash = (color: string): void => {
+    if (calm()) return;
+    const node = h('div', { class: 'dd-flash', 'aria-hidden': 'true' });
+    node.style.background = color;
+    el.append(node);
+    window.setTimeout(() => node.remove(), 420);
+  };
+  const rattle = (hard = false): void => {
+    if (calm()) return;
+    el.classList.remove('rattle', 'rattle-hard');
+    void el.offsetWidth;
+    el.classList.add(hard ? 'rattle-hard' : 'rattle');
+    window.setTimeout(() => el.classList.remove('rattle', 'rattle-hard'), 520);
+  };
+  const confetti = (count: number): void => {
+    if (calm()) return;
+    const colors = ['#f2b705', '#ffffff', '#c8371f', '#4f8f8a', '#efe8da'];
+    const wrap = h('div', { class: 'dd-confetti', 'aria-hidden': 'true' });
+    for (let i = 0; i < count; i++) {
+      const bit = h('i', {});
+      const ball = i % 4 === 0;
+      bit.className = ball ? 'ball' : 'chip';
+      bit.style.left = `${(i * 37) % 100}%`;
+      bit.style.background = ball ? '#f7f4ea' : (colors[i % colors.length] as string);
+      bit.style.animationDelay = `${(i % 12) * 55}ms`;
+      bit.style.animationDuration = `${1500 + ((i * 71) % 900)}ms`;
+      bit.style.setProperty('--drift', `${((i * 53) % 160) - 80}px`);
+      bit.style.setProperty('--spin', `${((i * 97) % 720) - 360}deg`);
+      wrap.append(bit);
+    }
+    el.append(wrap);
+    window.setTimeout(() => wrap.remove(), 3200);
+  };
+  /** Chain sizes that get shouted, smallest first. */
+  const HYPE: Array<[number, string]> = [[25, 'NICE'], [60, 'OUCH'], [120, 'MAYHEM'], [200, 'CARNAGE'], [320, 'BIBLICAL'], [480, 'CALL THE INSURANCE']];
+  let hypeAt = 0;
+  let booms = 0;
+  let roofShouted = 0;
+  const hype = (chain: number): void => {
+    while (hypeAt < HYPE.length && chain >= (HYPE[hypeAt] as [number, string])[0]) {
+      const [n, word] = HYPE[hypeAt] as [number, string];
+      hypeAt++;
+      shout(word, hypeAt >= 4 ? 'gold' : 'hot', `${n}+ pieces`, 'hype');
+      app.play(hypeAt >= 4 ? 'earned' : 'bonus');
+      rattle(hypeAt >= 3);
+      if (!calm()) {
+        slowmo = Math.max(slowmo, 0.25 + hypeAt * 0.12);
+        renderer.fx.shake = Math.min(1, renderer.fx.shake + 0.2 + hypeAt * 0.08);
+      }
+      app.buzz([20, 30, 20 + hypeAt * 10]);
+    }
+  };
+  /** The roof gives: called as sections of it let go. */
+  const roofMoment = (): void => {
+    const share = session.world.roofDown();
+    const step = share >= 0.9 ? 3 : share >= 0.45 ? 2 : share >= 0.15 ? 1 : 0;
+    if (step <= roofShouted) return;
+    roofShouted = step;
+    if (kind !== 'house') return;
+    shout(step === 3 ? 'ROOF IS DOWN' : step === 2 ? 'THERE SHE GOES' : 'TIMBER', step === 3 ? 'gold' : 'hot', '', 'roof');
+    flash(step === 3 ? 'rgba(255,214,102,0.55)' : 'rgba(255,255,255,0.35)');
+    rattle(true);
+    if (!calm()) {
+      slowmo = Math.max(slowmo, step === 3 ? 1.3 : 0.8);
+      renderer.fx.shake = Math.min(1, renderer.fx.shake + 0.45);
+    }
+    app.buzz([40, 30, 60]);
+  };
+
   const showHeadline = (tag: ShotTag, sub = ''): void => {
     const rank = (t: ShotTag | null): number => (t ? TAG_ORDER.length - TAG_ORDER.indexOf(t) : 0);
     if (rank(tag) < rank(shownTag) || (tag === shownTag && !sub)) return;
@@ -579,6 +688,8 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
         case 'collapse':
           play(e.count > 40 || e.roof ? 'heavyLanding' : 'rumble', Math.min(1, e.count / 60));
           app.buzz([20, 40, 20]);
+          if (e.roof) roofMoment();
+          else if (e.count > 30) rattle();
           break;
         case 'land':
           if (e.speed > 5) play('impact', Math.min(0.8, e.speed / 14));
@@ -586,6 +697,14 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
         case 'blast':
           play('detonate', e.ball ? 0.8 : 1, e.ball ? 'small' : 'heavy');
           app.buzz(30);
+          booms++;
+          shout(booms === 1 ? 'BOOM' : booms === 2 ? 'DOUBLE BOOM' : booms === 3 ? 'TRIPLE BOOM' : `KABOOM x${booms}`, 'boom', '', 'boom');
+          flash('rgba(255,140,40,0.5)');
+          rattle(booms > 1);
+          if (!calm()) {
+            slowmo = Math.max(slowmo, 0.3 + Math.min(4, booms) * 0.15);
+            renderer.fx.shake = Math.min(1, renderer.fx.shake + 0.35);
+          }
           break;
         case 'exit':
           play('bonus');
@@ -649,8 +768,14 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
       app.buzz([30, 60, 30, 60, 40]);
       renderer.fx.shake = Math.min(1, renderer.fx.shake + 0.5);
       el.classList.add('celebrate');
-      const stamp = h('div', { class: 'dd-stamp', 'aria-hidden': 'true' }, h('b', { text: 'HOUSE DOWN' }), h('span', { text: houseDef.name }));
+      const clutch = session.shotsLeft === 0;
+      const word = clutch ? 'CLUTCH' : stars === 3 ? 'HERO SHOT' : stars === 2 ? 'ROOF IS DOWN' : 'DOWN. EVENTUALLY.';
+      const stamp = h('div', { class: `dd-stamp${stars === 3 || clutch ? ' gold' : ''}`, 'aria-hidden': 'true' }, h('b', { text: word }), h('span', { text: houseDef.name }));
       el.append(stamp);
+      confetti(stars === 3 ? 90 : stars === 2 ? 55 : 24);
+      flash('rgba(255,214,102,0.5)');
+      rattle(true);
+      if (stars === 3) window.setTimeout(() => (app.play('total'), confetti(60)), 700);
       window.setTimeout(() => {
         stamp.remove();
         el.classList.remove('celebrate');
@@ -878,6 +1003,9 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
     weakDirty = true;
     resultShown = false;
     roofBefore = 0;
+    roofShouted = 0;
+    hypeAt = 0;
+    booms = 0;
     modal = false;
     paused = false;
     ball = 'standard';
@@ -951,6 +1079,8 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
         chainNum.textContent = String(q.chain);
         chainEl.classList.add('show');
         chainEl.classList.toggle('big', q.chain >= 40);
+        chainEl.classList.toggle('huge', q.chain >= 150);
+        hype(q.chain);
         chainEl.classList.remove('tick');
         void chainEl.offsetWidth;
         chainEl.classList.add('tick');

@@ -1320,3 +1320,39 @@ html:has(.dd-title) body {
 .dd-stars .on { color: #f2b705; -webkit-text-stroke: 1.5px #131416; }
 .dd-quote { font-style: italic; font-weight: 700; font-size: 19px; line-height: 1.25; margin: 0 0 10px; padding-left: 10px; border-left: 4px solid #f2b705; }
 .dd-down.last { color: #c8371f; }
+
+
+/* ---------- over the top ---------- */
+.dd-shout { position: absolute; left: 50%; top: 41%; z-index: 30; pointer-events: none; text-align: center; transform: translate(-50%, -50%) rotate(var(--tilt, -5deg)); animation: dd-shout 1500ms cubic-bezier(0.2, 1.5, 0.3, 1) forwards; white-space: nowrap; }
+.dd-shout b { display: block; font-size: var(--fs, 64px); line-height: 0.92; font-weight: 900; letter-spacing: 0.02em; color: #ffe08a; -webkit-text-stroke: 3px #131416; paint-order: stroke fill; text-shadow: 0 6px 0 #131416, 0 0 26px rgba(255, 176, 32, 0.55); }
+.dd-shout span { display: inline-block; margin-top: 10px; font-size: 14px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: #f6f1e6; background: #131416; padding: 5px 10px; border-radius: 4px; }
+.dd-shout.hot b { color: #ff6a3d; text-shadow: 0 6px 0 #131416, 0 0 26px rgba(255, 90, 40, 0.5); }
+.dd-shout.boom b { color: #ffb020; }
+.dd-shout.cool b { color: #f6f1e6; }
+.dd-shout.gold b { color: #ffd23f; }
+@keyframes dd-shout {
+  0% { transform: translate(-50%, -50%) rotate(var(--tilt, -5deg)) scale(3.2); opacity: 0; }
+  12% { transform: translate(-50%, -50%) rotate(var(--tilt, -5deg)) scale(0.9); opacity: 1; }
+  20% { transform: translate(-50%, -50%) rotate(var(--tilt, -5deg)) scale(1.06); }
+  28% { transform: translate(-50%, -50%) rotate(var(--tilt, -5deg)) scale(1); }
+  78% { opacity: 1; }
+  100% { transform: translate(-50%, -62%) rotate(var(--tilt, -5deg)) scale(1.04); opacity: 0; }
+}
+.dd-flash { position: absolute; inset: 0; z-index: 25; pointer-events: none; animation: dd-flash 420ms ease-out forwards; }
+@keyframes dd-flash { from { opacity: 1; } to { opacity: 0; } }
+.rattle > .dd-top, .rattle > .dd-bottom { animation: dd-rattle 420ms linear; }
+.rattle-hard > .dd-top, .rattle-hard > .dd-bottom { animation: dd-rattle-hard 520ms linear; }
+@keyframes dd-rattle { 0%, 100% { translate: 0 0; } 20% { translate: -3px 2px; } 40% { translate: 3px -2px; } 60% { translate: -2px -1px; } 80% { translate: 2px 1px; } }
+@keyframes dd-rattle-hard { 0%, 100% { translate: 0 0; rotate: 0deg; } 15% { translate: -7px 4px; rotate: -0.6deg; } 30% { translate: 6px -5px; rotate: 0.5deg; } 45% { translate: -5px -3px; } 60% { translate: 5px 3px; rotate: -0.3deg; } 80% { translate: -2px 1px; } }
+.dd-chain.huge { scale: 1.35; }
+.dd-chain.huge b, .dd-chain.huge .dd-chain-n { color: #ffd23f; }
+.dd-stamp.gold b { color: #ffd23f; text-shadow: 0 6px 0 #131416, 0 0 34px rgba(255, 200, 40, 0.7); }
+.dd-confetti { position: absolute; inset: 0; z-index: 28; pointer-events: none; overflow: hidden; }
+.dd-confetti i { position: absolute; top: -24px; display: block; animation: dd-confetti linear forwards; }
+.dd-confetti i.chip { width: 10px; height: 16px; border-radius: 2px; }
+.dd-confetti i.ball { width: 16px; height: 16px; border-radius: 50%; box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.14), 0 0 0 1.5px #131416; }
+@keyframes dd-confetti {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translate(var(--drift, 0), 105vh) rotate(var(--spin, 360deg)); opacity: 0; }
+}
