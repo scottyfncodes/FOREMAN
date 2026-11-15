@@ -65,7 +65,7 @@ export interface HouseSpec {
   cascade?: number;
   /** How big a hole a ball knocks: 1 is one brick, 2 takes the bricks around it too. Campaign houses use more. */
   punch?: number;
-  /** Multiplies what every wall, lintel, column and beam can carry. Below 1 the house is closer to its limit, so a loss spreads. */
+  /** Multiplies what the brick walls can carry. Below 1 the house is closer to its limit, so a loss spreads. */
   strength?: number;
   /** Gas bottles: go off when hit or hit, and set each other off. y is the floor they stand on (default the ground). */
   tanks?: Array<{ x: number; z: number; y?: number }>;

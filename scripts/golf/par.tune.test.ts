@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { test } from 'vitest';
 import { HOUSES, houseLevel } from '../../src/golf/game/houses';
 import { shotAt } from '../../src/golf/game/solve';
@@ -75,5 +75,8 @@ test('par', () => {
     console.log(`${h.id} ${h.name} parts ${play(h.id, []).world.parts.length} goal ${h.goal}: ${line.join(' ')}  [${((Date.now() - t0) / 1000).toFixed(0)}s]`);
   }
   // WRITE=1 records the lines the par test replays.
-  if (process.env.WRITE) writeFileSync('tests/golf-par.json', `${JSON.stringify(record, null, 1)}\n`);
+  if (process.env.WRITE) {
+    const old = existsSync('tests/golf-par.json') ? (JSON.parse(readFileSync('tests/golf-par.json', 'utf8')) as Record<string, number[][]>) : {};
+    writeFileSync('tests/golf-par.json', `${JSON.stringify({ ...old, ...record }, null, 1)}\n`);
+  }
 });

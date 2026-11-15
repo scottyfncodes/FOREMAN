@@ -235,7 +235,8 @@ export class World {
     this.rng = new Rng(seed);
     this.cascade = info.cascade;
     this.punch = info.punch;
-    if (info.strength !== 1) for (const p of this.parts) if (p.capacity < 1e8) p.capacity *= info.strength;
+    // Strength thins the walls only: lintels, columns and beams keep what they were built with.
+    if (info.strength !== 1) for (const p of this.parts) if (p.kind === 'brick' && p.capacity < 1e8) p.capacity *= info.strength;
     this.stamp = new Uint32Array(parts.length);
     this.load = new Float64Array(parts.length);
     this.heights = new Float32Array(HF_NX * HF_NZ);
