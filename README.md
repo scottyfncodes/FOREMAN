@@ -13,7 +13,7 @@ Add it to your iPhone Home Screen (Share → Add to Home Screen) for full-screen
 - **Stars.** One for reaching the goal in budget, two for doing it at par, three for beating par. Par is what a careful bot manages with standard balls alone, so three stars takes something smarter: a gas chain, a special ball, a better read of the structure.
 - **A ball knocks a hole, not a chip.** In the campaign a standard ball takes out a patch of wall. Take the wrong patch and nothing follows. Take the bricks under a lintel, a corner, or a porch column and the load above has nowhere to go.
 - **Chain reactions.** Falling pieces hit hard and heavy ones send a shock into what they land on. Red gas bottles go off a beat after they are hit and set off any bottle in reach.
-- **Weak points** pulse yellow while you aim: the standing parts whose loss would bring the most down.
+- **Weak points** pulse yellow while you aim: the spots a shot from the tee can reach whose loss would bring the most down, judged by the hole a ball actually knocks.
 - **Special balls are hidden in the bricks.** Break the right brick and a Power, Superball, Multiball, Heavy or Charge ball pops into your bag.
 
 ## Modes
@@ -41,6 +41,7 @@ pnpm typecheck    # tsc --noEmit
 pnpm build        # production build to dist/
 pnpm check        # all three
 pnpm par          # a greedy bot plays every house for its roof and records its line (sets par); also measures the weakest walls each house stands on
+pnpm novice       # how a new player fares on each house: blind shots vs shots at the yellow pulse (seeded, 40 runs)
 pnpm preview && pnpm smoke   # headless iPhone runs
 ```
 

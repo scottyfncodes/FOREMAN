@@ -45,9 +45,38 @@ export class App {
     this.screens.set(name, factory);
   }
 
+  /**
+   * A screen whose code is fetched the first time it is opened. The side
+   * modes (Crew Contracts, Frame Jobs) load this way so the houses start fast.
+   */
+  registerLazy(name: ScreenName, load: () => Promise<ScreenFactory>): void {
+    this.lazy.set(name, load);
+  }
+
+  private lazy = new Map<ScreenName, () => Promise<ScreenFactory>>();
+  private navToken = 0;
+
   go(name: ScreenName, params: Record<string, string> = {}): void {
+    const token = ++this.navToken;
+    const load = this.screens.has(name) ? undefined : this.lazy.get(name);
+    if (load) {
+      this.root.setAttribute('aria-busy', 'true');
+      load()
+        .then((factory) => {
+          this.screens.set(name, factory);
+          // A later navigation wins over one still loading.
+          if (token === this.navToken) this.show(name, factory, params);
+        })
+        .catch(() => this.toast('Could not load that. Check the connection and try again.', 'bad'))
+        .finally(() => this.root.removeAttribute('aria-busy'));
+      return;
+    }
     const factory = this.screens.get(name);
     if (!factory) throw new Error(`No screen registered for ${name}`);
+    this.show(name, factory, params);
+  }
+
+  private show(name: ScreenName, factory: ScreenFactory, params: Record<string, string>): void {
     this.current?.destroy?.();
     clear(this.root);
     this.current = factory(this, params);

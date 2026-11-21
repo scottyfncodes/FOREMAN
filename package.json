@@ -17,7 +17,8 @@
     "tune": "vitest run --config scripts/vitest.tune.config.ts --disableConsoleIntercept scripts/tune",
     "check": "pnpm typecheck && pnpm test && pnpm build",
     "probe": "vitest run --config scripts/foreman/vitest.config.ts --disableConsoleIntercept scripts/foreman/probe",
-    "par": "vitest run --config scripts/golf/vitest.config.ts --disableConsoleIntercept"
+    "par": "vitest run --config scripts/golf/vitest.config.ts --disableConsoleIntercept",
+    "novice": "vitest run --config scripts/golf/vitest.config.ts --disableConsoleIntercept scripts/golf/novice"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
