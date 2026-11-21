@@ -6,7 +6,7 @@ import { isCancel, pullFrom } from '../game/controls';
 import { getHouse, hiddenBalls, houseLevel, houseStars, roofJob, type HouseDef } from '../game/houses';
 import { TAG_LABEL, TAG_ORDER, type ShotTag, type Tier } from '../game/quality';
 import { SPECIALS, stash, type SpecialId } from '../game/rewards';
-import { shotAt, type AimedShot } from '../game/solve';
+import { reachableWeakPointsSteps, shotAt, type AimedShot } from '../game/solve';
 import { GolfRenderer, type ViewState } from '../render/scene';
 import { predict, type Prediction } from '../sim/aim';
 import { BALLS, BALL_ORDER, type BallId } from '../sim/balls';
@@ -103,6 +103,8 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
   let pins = pinsFor(session);
   let weak: number[] = [];
   let weakDirty = true;
+  /** The weak-point search in progress, stepped a little each frame. */
+  let weakJob: Generator<void, number[], void> | null = null;
   let snapDirty = false;
   /** Keyboard aiming shows the guide without a thumb on the glass. */
   let keyAim = false;
@@ -251,7 +253,7 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
     const d = share > 0 && share < 10 ? share.toFixed(1) : String(Math.floor(share));
     if (kind === 'house' && houseDef) {
       const left = session.shotsLeft;
-      titleEl.replaceChildren(h('span', { class: 'dd-no', text: houseDef.number }), h('b', { text: houseDef.name }), h('span', { class: `dd-down${left <= 1 ? ' last' : ''}`, text: `${left} shot${left === 1 ? '' : 's'} left` }));
+      titleEl.replaceChildren(h('span', { class: 'dd-no', text: houseDef.number }), h('b', { text: houseDef.name }), h('span', { class: `dd-down${left <= 1 ? ' last' : ''}` }, `${left} `, h('span', { class: 'dd-down-word', text: `shot${left === 1 ? '' : 's'} ` }), 'left'));
       const done = session.completed;
       const roof = session.world.roofDown() * 100;
       objText.textContent = done ? `Done in ${session.shotsUsed}.` : `${roofJob(houseDef.goal)} · par ${houseDef.par}`;
@@ -1098,11 +1100,34 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
     }
     const aiming = session.phase === 'aim';
     if (aiming && weakDirty && session.world.pending.size === 0) {
-      // Weak points, and the gas bottles still waiting to go off.
-      const bottles = session.world.parts.filter((p) => p.volatile && p.state === PartState.Intact).map((p) => p.id);
-      weak = kind === 'challenge' ? [] : [...session.world.weakPoints(3).map((x) => x.part), ...bottles.slice(0, 6)];
+      // Weak points, and the gas bottles still waiting to go off. The bottles show at once;
+      // the weak-point search runs a few milliseconds a frame so the aim never stalls.
+      const bottles = session.world.parts.filter((p) => p.volatile && p.state === PartState.Intact).map((p) => p.id).slice(0, 6);
+      weak = kind === 'challenge' ? [] : bottles;
+      weakJob = kind === 'challenge' ? null : reachableWeakPointsSteps(session.world, 3);
       pins = pinsFor(session);
       weakDirty = false;
+    }
+    if (weakJob && (!aiming || session.world.pending.size > 0)) {
+      // The house moved under the search: start it again once it is still.
+      weakJob = null;
+      weakDirty = true;
+    }
+    if (weakJob) {
+      const until = performance.now() + 4;
+      for (;;) {
+        const r = weakJob.next();
+        if (r.done) {
+          // Light the whole patch a ball would knock out there, not one brick: that is what to aim at.
+          // Roof pieces caught in a patch stay unlit, so the pulse never says "aim at the roof".
+          const roofKind = (id: number): boolean => ['tile', 'deck', 'ridge'].includes(session.world.parts[id]?.kind ?? '');
+          const lit = new Set(r.value.flatMap((id) => session.world.punchPatch(id)).filter((id) => !roofKind(id)));
+          weak = [...lit, ...weak.filter((id) => !lit.has(id))];
+          weakJob = null;
+          break;
+        }
+        if (performance.now() >= until) break;
+      }
     }
     if (snapDirty && aiming && session.world.settled) persist();
     const showGuide = aiming && !blocked() && (!!drag || keyAim);

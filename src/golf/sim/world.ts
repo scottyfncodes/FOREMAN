@@ -1342,10 +1342,36 @@ export class World {
   }
 
   /**
+   * The standing pieces a ball's punch takes out around a part: the part alone
+   * without punch, the patch of wall around it with (the campaign).
+   */
+  punchPatch(id: number): number[] {
+    const p = this.parts[id];
+    if (!p) return [];
+    const r = this.punch > 1 ? 0.46 * this.punch * 0.55 : 0;
+    if (!r) return [id];
+    const near = this.query(p.x - r, p.y - r, p.z - r, p.x + r, p.y + r, p.z + r, []);
+    return near.filter((q) => q.state === PartState.Intact && q.solid && Math.hypot(q.x - p.x, q.y - p.y, q.z - p.z) < r).map((q) => q.id);
+  }
+
+  /**
    * Standing parts whose loss would bring the most down: supports, chimney
    * footings, and the bricks at the edge of holes. Strongest first.
    */
   weakPoints(max = 3, minFall = 6, minWeight = 4): Array<{ part: number; count: number }> {
+    const job = this.weakPointsSteps(max, minFall, minWeight);
+    for (;;) {
+      const r = job.next();
+      if (r.done) return r.value;
+    }
+  }
+
+  /**
+   * weakPoints, one candidate per step, so the play screen can spread the search
+   * over several frames instead of stalling the aim. The house must not change
+   * between steps (each step leaves it exactly as it found it).
+   */
+  *weakPointsSteps(max = 3, minFall = 6, minWeight = 4): Generator<void, Array<{ part: number; count: number }>, void> {
     const P = this.parts;
     const cands: Part[] = [];
     const seen = new Set<number>();
@@ -1367,11 +1393,26 @@ export class World {
         edge++;
       }
     }
+    // With punch on (the campaign) a ball takes a patch of wall, not one brick, so a plain
+    // stretch of wall can be the spot that matters: sample the walls the tee can see, and
+    // judge every candidate by the patch a ball would take out around it.
+    if (this.punch > 1) {
+      // The front wall, and the front half of the side walls: what a shot from the tee reaches.
+      const midZ = (this.info.interior.minZ + this.info.interior.maxZ) / 2;
+      let k = 0;
+      for (const p of P) {
+        if (p.state !== PartState.Intact || p.kind !== 'brick' || !p.house) continue;
+        if (!(p.wall === 'front' || ((p.wall === 'left' || p.wall === 'right') && p.z > midZ))) continue;
+        if (k++ % 7 === 0) add(p);
+      }
+    }
+    const around = (p: Part): number[] => this.punchPatch(p.id);
     const out: Array<{ part: number; count: number; weight: number }> = [];
     for (const p of cands) {
-      const f = this.fallIfRemoved([p.id]);
+      const f = this.fallIfRemoved(around(p));
       // Many pieces, or a few heavy ones (a porch roof, a floor).
       if (f.count >= minFall || f.weight >= minWeight) out.push({ part: p.id, count: f.count, weight: f.weight });
+      yield;
     }
     out.sort((a, b) => b.weight - a.weight || a.part - b.part);
     return out.slice(0, max).map(({ part, count }) => ({ part, count }));

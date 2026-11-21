@@ -1,0 +1,5 @@
+{
+  "license": "LicenseRef-Foreman-Original",
+  "attribution": "Original Foreman artwork (golf ball through the brick house), made for this project; not released under an open licence.",
+  "source": "the master icon drawing in this repository; scripts/generate-icons.mjs renders the PNG sizes from it"
+}

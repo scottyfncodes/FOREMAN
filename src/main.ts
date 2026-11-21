@@ -1,16 +1,8 @@
 import './styles.css';
 import './golf/ui/golf.css';
 import { App } from './app';
-import { foremanScreen } from './foreman/ui/screen';
 import { golfPlayScreen } from './golf/ui/play';
 import { golfChallengesScreen, golfHousesScreen, golfSettingsScreen, golfTitleScreen } from './golf/ui/screens';
-import { briefScreen } from './ui/screens/brief';
-import { garageScreen } from './ui/screens/garage';
-import { jobsScreen } from './ui/screens/jobs';
-import { playScreen } from './ui/screens/play';
-import { recordsScreen } from './ui/screens/records';
-import { settingsScreen } from './ui/screens/settings';
-import { titleScreen } from './ui/screens/title';
 
 const root = document.getElementById('app');
 if (!root) throw new Error('Missing #app root');
@@ -19,21 +11,23 @@ const app = new App(root);
 // The game: golf shots knocking down houses.
 app.register('title', golfTitleScreen);
 app.register('classic-golf', golfTitleScreen);
-// The frame-building experiment, kept reachable from Settings.
-app.register('frames', foremanScreen);
+// The frame-building experiment, kept reachable from Settings. Its code loads when opened.
+app.registerLazy('frames', () => import('./foreman/ui/screen').then((m) => m.foremanScreen));
 app.register('houses', golfHousesScreen);
 app.register('challenges', golfChallengesScreen);
 app.register('levels', golfChallengesScreen);
 app.register('golf', golfPlayScreen);
 app.register('golf-settings', golfSettingsScreen);
-// The original crew-contracts game, kept whole and reachable from Settings.
-app.register('classic', titleScreen);
-app.register('jobs', jobsScreen);
-app.register('brief', briefScreen);
-app.register('play', playScreen);
-app.register('garage', garageScreen);
-app.register('settings', settingsScreen);
-app.register('records', recordsScreen);
+// The original crew-contracts game, kept whole and reachable from Settings. It is one
+// chunk, fetched the first time any of its screens opens.
+const classic = (): Promise<typeof import('./classic')> => import('./classic');
+app.registerLazy('classic', () => classic().then((m) => m.titleScreen));
+app.registerLazy('jobs', () => classic().then((m) => m.jobsScreen));
+app.registerLazy('brief', () => classic().then((m) => m.briefScreen));
+app.registerLazy('play', () => classic().then((m) => m.playScreen));
+app.registerLazy('garage', () => classic().then((m) => m.garageScreen));
+app.registerLazy('settings', () => classic().then((m) => m.settingsScreen));
+app.registerLazy('records', () => classic().then((m) => m.recordsScreen));
 // ?frames opens the frame-building experiment directly (its smoke test uses this).
 app.go(new URLSearchParams(window.location.search).has('frames') ? 'frames' : 'title');
 
@@ -70,3 +64,10 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
     navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => undefined);
   });
 }
+
+// Once the houses are up, fetch the side modes quietly so they open at once and work offline.
+window.addEventListener('load', () => {
+  const warm = (): void => void Promise.all([import('./classic'), import('./foreman/ui/screen')]).catch(() => undefined);
+  const idle = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+  window.setTimeout(() => (idle ? idle(warm, { timeout: 4000 }) : warm()), 6000);
+});
