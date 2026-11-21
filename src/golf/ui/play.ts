@@ -477,8 +477,8 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
     booms = 0;
     if (kind === 'house') {
       const last = session.shotsLeft === 0;
-      if (last) { shout('LAST BALL', 'cool', 'never lay up'); app.play('heartbeat', 1); }
-      else if (shot.power >= 0.97) { shout('FULL SEND', 'cool'); rattle(); }
+      if (last) { shout('LAST BALL', 'cool'); app.play('heartbeat', 1); }
+      else if (shot.power >= 0.97) rattle();
     }
     keyAim = false;
     shownTag = null;
@@ -501,8 +501,10 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
   let shownTag: ShotTag | null = null;
   let headlineTimer = 0;
   // ------------------------------------------------------- over the top
-  // Big reactions: shouts across the screen, flashes, a rattling HUD, confetti. All of it is
-  // layered on what the simulation actually did; none of it changes a result.
+  // Big reactions: flashes, a rattling HUD, confetti, and a shout across the screen for the few
+  // moments the job is about (the roof giving, a gas bottle, the last ball). Everything else is
+  // felt, not read: the chain counter shows size, sound, shake and slow motion do the rest.
+  // All of it is layered on what the simulation actually did; none of it changes a result.
   const calm = (): boolean => app.reducedMotion;
   type Shout = { text: string; tone: 'hot' | 'gold' | 'boom' | 'cool'; sub: string; slot: string };
   const shoutQueue: Shout[] = [];
@@ -566,16 +568,14 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
     el.append(wrap);
     window.setTimeout(() => wrap.remove(), 3200);
   };
-  /** Chain sizes that get shouted, smallest first. */
-  const HYPE: Array<[number, string]> = [[25, 'NICE'], [60, 'OUCH'], [120, 'MAYHEM'], [200, 'CARNAGE'], [320, 'BIBLICAL'], [480, 'CALL THE INSURANCE']];
+  /** Chain sizes that step the response up (sound, shake, slow motion), smallest first. */
+  const HYPE = [25, 60, 120, 200, 320, 480];
   let hypeAt = 0;
   let booms = 0;
   let roofShouted = 0;
   const hype = (chain: number): void => {
-    while (hypeAt < HYPE.length && chain >= (HYPE[hypeAt] as [number, string])[0]) {
-      const [n, word] = HYPE[hypeAt] as [number, string];
+    while (hypeAt < HYPE.length && chain >= (HYPE[hypeAt] as number)) {
       hypeAt++;
-      shout(word, hypeAt >= 4 ? 'gold' : 'hot', `${n}+ pieces`, 'hype');
       app.play(hypeAt >= 4 ? 'earned' : 'bonus');
       rattle(hypeAt >= 3);
       if (!calm()) {
@@ -700,7 +700,8 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
           play('detonate', e.ball ? 0.8 : 1, e.ball ? 'small' : 'heavy');
           app.buzz(30);
           booms++;
-          shout(booms === 1 ? 'BOOM' : booms === 2 ? 'DOUBLE BOOM' : booms === 3 ? 'TRIPLE BOOM' : `KABOOM x${booms}`, 'boom', '', 'boom');
+          // One word for the first bottle; the ones it sets off are heard and felt, not spelled out.
+          if (booms === 1) shout('BOOM', 'boom');
           flash('rgba(255,140,40,0.5)');
           rattle(booms > 1);
           if (!calm()) {
@@ -721,11 +722,12 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
   let shotQuips = 0;
   const onShot = (r: ShotReport): void => {
     const q = r.quality;
-    if (q.headline) showHeadline(q.headline, '');
-    if (q.chain >= CHAIN_SHOW) {
-      const best = !!houseRec && q.chain > houseRec.bestChain && houseRec.bestChain > 0;
-      showHeadline(q.headline ?? 'chain', `${q.chain}-piece chain${best ? ', a new best' : ''}`);
-      if (best) window.setTimeout(() => app.play('newBest'), 400);
+    // After a house shot the caddie is the one voice, and the line is about the roof.
+    if (kind !== 'house') {
+      if (q.headline) showHeadline(q.headline, '');
+      if (q.chain >= CHAIN_SHOW) showHeadline(q.headline ?? 'chain', `${q.chain}-piece chain`);
+    } else if (houseRec && q.chain >= CHAIN_SHOW && houseRec.bestChain > 0 && q.chain > houseRec.bestChain) {
+      window.setTimeout(() => app.play('newBest'), 400);
     }
     window.setTimeout(() => chainEl.classList.remove('show'), 1600);
     if (kind === 'house' && houseRec && houseDef) {
@@ -1088,7 +1090,8 @@ export function golfPlayScreen(app: App, params: Record<string, string>): Screen
         chainEl.classList.add('tick');
       }
       if (q) {
-        if (q.headline) showHeadline(q.headline);
+        // In the houses the roof is the story: shot tags stay off screen (score modes show them).
+        if (q.headline && kind !== 'house') showHeadline(q.headline);
         if (q.tier > liveTier) reactTo(q.tier, q.headline);
         liveTier = Math.max(liveTier, q.tier) as Tier;
       }
